@@ -1,9 +1,8 @@
-﻿using ProductivityKeeperModels.TaskRelated;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ProductivityKeeperModels
+namespace ProductivityKeeperWeb.Models
 {
     public class UserSettings
     {

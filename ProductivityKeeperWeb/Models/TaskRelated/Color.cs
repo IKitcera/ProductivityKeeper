@@ -1,15 +1,22 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ProductivityKeeperModels.TaskRelated
+namespace ProductivityKeeperWeb.Models.TaskRelated
 {
-    public struct Color
+    [Owned]
+    public class Color
     {
+        public int Id { get; set; }
         public ushort R { get; set; }
         public ushort G { get; set; }
         public ushort B { get; set; }
         public ushort A { get; set; }
+        public Color()
+        {
+
+        }
 
         public Color(ushort r, ushort g, ushort b)
         {
