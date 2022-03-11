@@ -65,9 +65,10 @@ namespace ProductivityKeeperWeb.Controllers
 
             try
             {
-                var tsk = unit.Categories
+                var sub = unit.Categories
                      .Where(c => c.Id == categoryId).First().Subcategories
-                     .Where(s => s.Id == subcategoryId).First().Tasks
+                     .Where(s => s.Id == subcategoryId).First();
+                var tsk = sub.Tasks
                      .Where(t => t.Id == taskId).First();
 
 
@@ -104,12 +105,11 @@ namespace ProductivityKeeperWeb.Controllers
             task = helper.FillTask(categoryId, subcategoryId, task);
             sub.Tasks.Add(task);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction("GetTask", new { id = task.Id }, task);
         }
 
         // DELETE: api/Categorys/5
-        [HttpDelete("{id}")]
+        [HttpDelete]
         public async Task<IActionResult> DeleteTask(int categoryId, int subcategoryId, int taskId)
         {
             var sub = await helper.GetSubcategory(categoryId, subcategoryId);
@@ -131,6 +131,10 @@ namespace ProductivityKeeperWeb.Controllers
         {
             var task = await helper.GetTask(categoryId, subcategoryId, taskId);
             task.IsChecked = !task.IsChecked;
+
+            //sort checked
+            var subcategory = await helper.GetSubcategory(categoryId, subcategoryId);
+
             await _context.SaveChangesAsync();
             return Ok();
         }

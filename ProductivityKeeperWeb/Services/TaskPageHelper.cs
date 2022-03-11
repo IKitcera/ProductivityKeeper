@@ -22,13 +22,19 @@ namespace ProductivityKeeperWeb.Services
             User = httpContextAccessor.HttpContext.User.Identity as ClaimsIdentity;
         }
 
-        public Task<Unit> GetUnit()
+        public async Task<Unit> GetUnit()
         {
             if (!User.IsAuthenticated)
                 return null;
 
             var userId = User.Name;
-            return _context.Units.FirstOrDefaultAsync(u => u.UserId == userId);
+            var unit = await _context.Units.FirstOrDefaultAsync(u => u.UserId == userId);
+            unit.Categories.ForEach(ctg =>
+                ctg.Subcategories.ForEach(sub =>
+                {
+                    sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ToList();
+                }));
+            return unit;
         }
 
         public async Task<Category> GetCategory(int categoryId)
@@ -36,7 +42,15 @@ namespace ProductivityKeeperWeb.Services
             var unit = await GetUnit();
 
             if (unit != null && unit.Categories.Count >= 0)
-                return unit.Categories.FirstOrDefault(cat => cat.Id == categoryId);
+            {
+                var ctg = unit.Categories.FirstOrDefault(cat => cat.Id == categoryId);
+                ctg.Subcategories.ForEach(sub =>
+                {
+                    sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ToList();
+                });
+                return ctg;
+            }
+                
             return null;
         }
 
@@ -44,6 +58,7 @@ namespace ProductivityKeeperWeb.Services
         {
             var ctg = await GetCategory(categoryId);
             var sub = ctg?.Subcategories.FirstOrDefault(s => s.Id == subcategoryId);
+            sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ToList();
             return sub;
         }
 
