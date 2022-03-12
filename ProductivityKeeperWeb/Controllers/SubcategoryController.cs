@@ -102,7 +102,7 @@ namespace ProductivityKeeperWeb.Controllers
         }
 
         // DELETE: api/Categorys/5
-        [HttpDelete("{id}")]
+        [HttpDelete]
         public async Task<IActionResult> DeleteSubcategory(int categoryId, int subcategoryId)
         {
             var ctg = await _taskPageHelper.GetCategory(categoryId);

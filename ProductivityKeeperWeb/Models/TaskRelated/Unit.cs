@@ -11,5 +11,6 @@ namespace ProductivityKeeperWeb.Models.TaskRelated
         [JsonIgnore]
         public string UserId { get; init; }
         public List<Category> Categories { get; set; } = new List<Category>();
+        public Timer Timer { get; set; } = new Timer();
     }
 }

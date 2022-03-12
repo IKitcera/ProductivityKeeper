@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductivityKeeperWeb.Data;
 
 namespace ProductivityKeeperWeb.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220311214326_AddedTimer")]
+    partial class AddedTimer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,12 +28,38 @@ namespace ProductivityKeeperWeb.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("TimerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TimerId");
+
                     b.ToTable("Units");
+                });
+
+            modelBuilder.Entity("ProductivityKeeperWeb.Models.Timer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal>("Goal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Label")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Ticked")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Timer");
                 });
 
             modelBuilder.Entity("ProductivityKeeperWeb.Models.User", b =>
@@ -87,6 +115,10 @@ namespace ProductivityKeeperWeb.Migrations
 
             modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Unit", b =>
                 {
+                    b.HasOne("ProductivityKeeperWeb.Models.Timer", "Timer")
+                        .WithMany()
+                        .HasForeignKey("TimerId");
+
                     b.OwnsMany("ProductivityKeeperWeb.Models.TaskRelated.Category", "Categories", b1 =>
                         {
                             b1.Property<int>("UnitId")
@@ -252,33 +284,6 @@ namespace ProductivityKeeperWeb.Migrations
                             b1.Navigation("Color");
 
                             b1.Navigation("Subcategories");
-                        });
-
-                    b.OwnsOne("ProductivityKeeperWeb.Models.Timer", "Timer", b1 =>
-                        {
-                            b1.Property<int>("UnitId")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                            b1.Property<long>("Goal")
-                                .HasColumnType("bigint");
-
-                            b1.Property<int>("Id")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Label")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<long>("Ticked")
-                                .HasColumnType("bigint");
-
-                            b1.HasKey("UnitId");
-
-                            b1.ToTable("Units");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UnitId");
                         });
 
                     b.Navigation("Categories");
