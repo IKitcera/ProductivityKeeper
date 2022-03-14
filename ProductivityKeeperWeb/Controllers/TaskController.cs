@@ -65,6 +65,7 @@ namespace ProductivityKeeperWeb.Controllers
 
             try
             {
+
                 var sub = unit.Categories
                      .Where(c => c.Id == categoryId).First().Subcategories
                      .Where(s => s.Id == subcategoryId).First();
@@ -72,12 +73,20 @@ namespace ProductivityKeeperWeb.Controllers
                      .Where(t => t.Id == taskId).First();
 
 
-                tsk.IsChecked = task.IsChecked;
-
+                tsk = task;
+                
                 if (tsk.IsChecked)
                     tsk.DoneDate = DateTime.Now;
 
-                tsk.Deadline = task.Deadline;
+                if (task is ConnectedToDifferentSubcategoriesTask connected)
+                {
+                    for (int i = 0; i < connected.CategoriesId.Count; i++)
+                    {
+                        var s = await helper.GetSubcategory(connected.CategoriesId[i], connected.SubcategoriesId[i]);
+                        s.Tasks.Add(connected);
+                    }
+                }
+
 
                 await _context.SaveChangesAsync();
             }
@@ -131,9 +140,6 @@ namespace ProductivityKeeperWeb.Controllers
         {
             var task = await helper.GetTask(categoryId, subcategoryId, taskId);
             task.IsChecked = !task.IsChecked;
-
-            //sort checked
-            var subcategory = await helper.GetSubcategory(categoryId, subcategoryId);
 
             await _context.SaveChangesAsync();
             return Ok();

@@ -34,7 +34,7 @@ namespace ProductivityKeeperWeb.Services
             statistic.CountOfExpiredTotal = AllTasks.Where(t => t.DoneDate > t.Deadline || (DateTime.Now > t.Deadline && !t.IsChecked)).Count();
             statistic.CountOfDoneTotal = AllTasks.Where(t => t.IsChecked).Count();
 
-            var grouppedByDoneDate = AllTasks.GroupBy(task => task.DoneDate).ToDictionary(x => x.Key, x => x.ToList());
+            var grouppedByDoneDate = AllTasks.Where(t => t.DoneDate.HasValue && t.IsChecked).GroupBy(task => task.DoneDate)?.ToDictionary(x => x.Key, x => x.ToList());
 
             statistic.DonePerDay.Clear();
 

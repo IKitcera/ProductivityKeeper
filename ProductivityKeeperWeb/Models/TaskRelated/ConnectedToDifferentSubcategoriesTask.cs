@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Text;
 
 namespace ProductivityKeeperWeb.Models.TaskRelated
 {
-    public class ConnectedToDifferentSubcategoriesTask
+    [Owned]
+    public class ConnectedToDifferentSubcategoriesTask : Task
     {
-        public int Id { get; set; }
-        public int SubcategoryId1 { get; set; }
-        public int SubcategoryId2 { get; set; }
+        public List<int> CategoriesId { get; set; } = new List<int>();
+        public List<int> SubcategoriesId { get; set; } = new List<int>();
     }
 }

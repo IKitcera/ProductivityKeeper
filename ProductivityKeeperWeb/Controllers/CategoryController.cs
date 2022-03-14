@@ -60,8 +60,9 @@ namespace ProductivityKeeperWeb.Controllers
             {
                 return BadRequest();
             }
-
+            
             var unit = await _taskPageHelper.GetUnit();
+           
             if (unit == null)
                 return Unauthorized();
 
@@ -69,10 +70,15 @@ namespace ProductivityKeeperWeb.Controllers
 
             try
             {
-                var ctg = unit.Categories.FirstOrDefault(cat => cat.Id == categoryId);
+               
+                var ctg = unit.Categories.FirstOrDefault(c => c.Id == categoryId);
                 ctg = category;
 
+
+                var u = await _context.Units.FindAsync(unit.Id);
+                u = unit;
                 await _context.SaveChangesAsync();
+                
             }
             catch (DbUpdateConcurrencyException)
             {
