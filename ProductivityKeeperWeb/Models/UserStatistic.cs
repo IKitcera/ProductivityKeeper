@@ -1,4 +1,5 @@
-﻿using ProductivityKeeperWeb.Models.TaskRelated;
+﻿using Microsoft.EntityFrameworkCore;
+using ProductivityKeeperWeb.Models.TaskRelated;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,10 +7,11 @@ using System.Text;
 
 namespace ProductivityKeeperWeb.Models
 {
+    [Owned]
     public class UserStatistic
     {
         public int Id { get; set; }
-        public Dictionary<DateTime, float> DonePerDay = new Dictionary<DateTime, float>();
+        public List<DonePerDay> PerDayStatistic { get; set; } = new List<DonePerDay>();
         public float PercentOfDoneToday { get; set; }
         public float PercentOfDoneTotal { get; set; }
         public int CountOfDoneToday { get; set; }

@@ -73,10 +73,13 @@ namespace ProductivityKeeperWeb.Controllers
                      .Where(t => t.Id == taskId).First();
 
 
-                tsk = task;
                 
-                if (tsk.IsChecked)
-                    tsk.DoneDate = DateTime.Now;
+                tsk.Text = tsk.Text;
+                tsk.Deadline = task.Deadline;
+
+                tsk.DoneDate = task.IsChecked && !tsk.IsChecked ? tsk.DoneDate = DateTime.Now : null;
+
+                tsk.IsChecked = task.IsChecked;
 
                 if (task is ConnectedToDifferentSubcategoriesTask connected)
                 {

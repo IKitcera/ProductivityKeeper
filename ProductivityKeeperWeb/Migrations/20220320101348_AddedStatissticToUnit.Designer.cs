@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductivityKeeperWeb.Data;
 
 namespace ProductivityKeeperWeb.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220320101348_AddedStatissticToUnit")]
+    partial class AddedStatissticToUnit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -326,8 +328,8 @@ namespace ProductivityKeeperWeb.Migrations
                                         .HasColumnType("int")
                                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                                    b2.Property<int>("CountOfDone")
-                                        .HasColumnType("int");
+                                    b2.Property<float>("CountOfDone")
+                                        .HasColumnType("real");
 
                                     b2.Property<DateTime>("Date")
                                         .HasColumnType("datetime2");

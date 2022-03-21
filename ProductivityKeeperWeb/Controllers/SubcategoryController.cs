@@ -115,6 +115,12 @@ namespace ProductivityKeeperWeb.Controllers
             }
 
             ctg.Subcategories.Remove(sub);
+            
+            for(int i = sub.Position; i < ctg.Subcategories.Count; i++)
+            {
+                ctg.Subcategories[i].Position = i;
+            }
+
             await _context.SaveChangesAsync();
 
             return NoContent();

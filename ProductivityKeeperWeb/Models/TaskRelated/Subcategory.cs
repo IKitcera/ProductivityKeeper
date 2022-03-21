@@ -14,6 +14,8 @@ namespace ProductivityKeeperWeb.Models.TaskRelated
         public Color Color { get; set; }
         public List<Task> Tasks { get; set; } = new List<Task>();
         [JsonIgnore]
+        public int Position { get; set; }
+        [JsonIgnore]
         public DateTime DateOfCreation { get; set; }
         public Subcategory()
         {

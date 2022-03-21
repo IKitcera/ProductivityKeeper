@@ -71,12 +71,19 @@ namespace ProductivityKeeperWeb.Controllers
             try
             {
                
-                var ctg = unit.Categories.FirstOrDefault(c => c.Id == categoryId);
-                ctg = category;
+                var ctg = unit.Categories.Where(c => c.Id == categoryId).First();
+                ctg.Name = category.Name;
+                ctg.Color = category.Color;
+                ctg.Subcategories = category.Subcategories;
+                ctg.Subcategories.ForEach(sub =>
+                {
+                    var inputMatch = category.Subcategories.FirstOrDefault(s => s.Id == sub.Id);
+                    if (inputMatch != null)
+                    {
+                        sub.Position = category.Subcategories.IndexOf(inputMatch);
+                    }
+                });
 
-
-                var u = await _context.Units.FindAsync(unit.Id);
-                u = unit;
                 await _context.SaveChangesAsync();
                 
             }

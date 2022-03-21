@@ -12,5 +12,6 @@ namespace ProductivityKeeperWeb.Models.TaskRelated
         public string UserId { get; init; }
         public List<Category> Categories { get; set; } = new List<Category>();
         public Timer Timer { get; set; } = new Timer();
+        public UserStatistic Statistic { get; set; }
     }
 }

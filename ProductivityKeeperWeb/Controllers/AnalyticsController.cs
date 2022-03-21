@@ -23,9 +23,7 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpGet]
         public async Task<ActionResult<UserStatistic>> GetStatistic()
         {
-            var unit = await _helper.GetUnit();
-            var statistic = _analytic.GetStatistic(unit);
-            return statistic;
+            return await _analytic.GetStatistic();
         }
     }
 }

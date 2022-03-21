@@ -30,10 +30,14 @@ namespace ProductivityKeeperWeb.Services
             var userId = User.Name;
             var unit = await _context.Units.FirstOrDefaultAsync(u => u.UserId == userId);
             unit.Categories.ForEach(ctg =>
+            {
                 ctg.Subcategories.ForEach(sub =>
                 {
                     sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ToList();
-                }));
+                });
+                ctg.Subcategories = ctg.Subcategories.OrderBy(s => s.Position).ToList();
+            });
+
             return unit;
         }
 
@@ -48,6 +52,7 @@ namespace ProductivityKeeperWeb.Services
                 {
                     sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ToList();
                 });
+                ctg.Subcategories = ctg.Subcategories.OrderBy(s => s.Position).ToList();
                 return ctg;
             }
                 
@@ -99,17 +104,17 @@ namespace ProductivityKeeperWeb.Services
                 subcategory.Color = new Color((ushort)r.Next(0, 256), (ushort)r.Next(0, 256), (ushort)r.Next(0, 256), (ushort)r.Next(50, 256));
             }
 
+            var ctg = GetCategory(ctgId).Result;
+
             if (string.IsNullOrEmpty(subcategory.Name))
             {
-                var ctg = GetCategory(ctgId).Result;
-
                 var lastGeneratedItem = ctg.Subcategories.LastOrDefault(sub => sub.Name.Contains(nameof(Subcategory)));
                 var lastGeneratedName = lastGeneratedItem != null ? lastGeneratedItem.Name : $"{nameof(Subcategory)} 0";
                 string newGeneratedName = nameof(Subcategory) + " " + (int.Parse(lastGeneratedName.Substring((nameof(Subcategory).Length))) + 1).ToString();
                 subcategory.Name = newGeneratedName;
             }
             subcategory.DateOfCreation = System.DateTime.Now;
-
+            subcategory.Position = ctg.Subcategories.Count;
             return subcategory;
         }
 

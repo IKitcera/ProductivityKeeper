@@ -5,6 +5,6 @@ namespace ProductivityKeeperWeb.Services
 {
     public interface IAnalytics
     {
-        UserStatistic GetStatistic(Unit usersUnit);
+        System.Threading.Tasks.Task<UserStatistic> GetStatistic();
     }
 }

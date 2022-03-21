@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductivityKeeperWeb.Data;
 
 namespace ProductivityKeeperWeb.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220320084146_StatModified")]
+    partial class StatModified
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -284,68 +286,7 @@ namespace ProductivityKeeperWeb.Migrations
                                 .HasForeignKey("UnitId");
                         });
 
-                    b.OwnsOne("ProductivityKeeperWeb.Models.UserStatistic", "Statistic", b1 =>
-                        {
-                            b1.Property<int>("UnitId")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                            b1.Property<int>("CountOfDoneToday")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("CountOfDoneTotal")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("CountOfExpiredTotal")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("Id")
-                                .HasColumnType("int");
-
-                            b1.Property<float>("PercentOfDoneToday")
-                                .HasColumnType("real");
-
-                            b1.Property<float>("PercentOfDoneTotal")
-                                .HasColumnType("real");
-
-                            b1.HasKey("UnitId");
-
-                            b1.ToTable("Units");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UnitId");
-
-                            b1.OwnsMany("ProductivityKeeperWeb.Models.DonePerDay", "PerDayStatistic", b2 =>
-                                {
-                                    b2.Property<int>("UserStatisticUnitId")
-                                        .HasColumnType("int");
-
-                                    b2.Property<int>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("int")
-                                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                                    b2.Property<int>("CountOfDone")
-                                        .HasColumnType("int");
-
-                                    b2.Property<DateTime>("Date")
-                                        .HasColumnType("datetime2");
-
-                                    b2.HasKey("UserStatisticUnitId", "Id");
-
-                                    b2.ToTable("DonePerDay");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("UserStatisticUnitId");
-                                });
-
-                            b1.Navigation("PerDayStatistic");
-                        });
-
                     b.Navigation("Categories");
-
-                    b.Navigation("Statistic");
 
                     b.Navigation("Timer");
                 });
