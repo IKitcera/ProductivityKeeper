@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Models.TaskRelated;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 namespace ProductivityKeeperWeb.Services
 {
     [Authorize]
-    public class TaskPageHelper: ITaskPageHelper
+    public class TaskPageHelper : ITaskPageHelper
     {
         private readonly ApplicationContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -55,7 +57,7 @@ namespace ProductivityKeeperWeb.Services
                 ctg.Subcategories = ctg.Subcategories.OrderBy(s => s.Position).ToList();
                 return ctg;
             }
-                
+
             return null;
         }
 
@@ -79,7 +81,7 @@ namespace ProductivityKeeperWeb.Services
             {
                 System.Random r = new System.Random();
                 category.Color = new Color((ushort)r.Next(0, 256), (ushort)r.Next(0, 256), (ushort)r.Next(0, 256), (ushort)r.Next(50, 256));
-            }         
+            }
 
             if (string.IsNullOrEmpty(category.Name))
             {
@@ -98,7 +100,7 @@ namespace ProductivityKeeperWeb.Services
 
         public Subcategory FillSubcategory(int ctgId, Subcategory subcategory)
         {
-            if(subcategory.Color == null)
+            if (subcategory.Color == null)
             {
                 System.Random r = new System.Random();
                 subcategory.Color = new Color((ushort)r.Next(0, 256), (ushort)r.Next(0, 256), (ushort)r.Next(0, 256), (ushort)r.Next(50, 256));
@@ -118,7 +120,7 @@ namespace ProductivityKeeperWeb.Services
             return subcategory;
         }
 
-      
+
         public Models.TaskRelated.Task FillTask(int ctgId, int subId, Models.TaskRelated.Task task)
         {
             if (string.IsNullOrEmpty(task.Text))
@@ -127,5 +129,130 @@ namespace ProductivityKeeperWeb.Services
             task.DateOfCreation = System.DateTime.Now;
             return task;
         }
+
+        public async Task<TaskToManySubcategories> GetConnectedTaskRelations(int cId, int sId, int tId)
+        {
+            var unit = await GetUnit();
+            return unit.TaskToManySubcategories.FirstOrDefault(x => x.TaskSubcategories
+                .Any(t => t.TaskId == tId));
+        }
+
+        public async Task<IEnumerable<Models.TaskRelated.Task>> GetConnectedTasks(int cId, int sId, int tId)
+        {
+            var relation = await GetConnectedTaskRelations(cId, sId, tId);
+            IEnumerable<Models.TaskRelated.Task> tasks = new List<Models.TaskRelated.Task>();
+
+            foreach (var x in relation.TaskSubcategories)
+            {
+                var task = await GetTask(x.CategoryId, x.SubcategoryId, x.TaskId);
+                (tasks as List<Models.TaskRelated.Task>).Add(task);
+            }
+            return tasks;
+        }
+
+        public void ValidateConnectedTaskOnDuplicates(List<TaskToManySubcategories> relations, int tId)
+        {
+            relations.ForEach(x =>
+            {
+                if (x.TaskSubcategories.Any(t => t.TaskId == tId))
+                    throw new System.Exception("This task is already connected");
+            });
+        }
+
+        public async System.Threading.Tasks.Task ValidateConnectedTaskOnDuplicatesAsync(int tId)
+        {
+            var taskRelationExisted = (await GetUnit()).TaskToManySubcategories;
+            ValidateConnectedTaskOnDuplicates(taskRelationExisted, tId);
+        }
+
+        public async System.Threading.Tasks.Task AddConnectedTaskRelation(int cId, int sId, int tId, int[] tasks, int[] categories, int[] subcategories)
+        {
+            var taskRelationExisted = (await GetUnit()).TaskToManySubcategories;
+            ValidateConnectedTaskOnDuplicates(taskRelationExisted, tId);
+
+            TaskToManySubcategories taskRelation = new TaskToManySubcategories();
+            taskRelation.TaskSubcategories.Add(new TaskSubcategory
+            {
+                CategoryId = cId,
+                SubcategoryId = sId,
+                TaskId = tId
+            });
+
+            for (int i = 0; i < tasks.Length; i++)
+            {
+                taskRelation.TaskSubcategories.Add(
+                    new TaskSubcategory
+                    {
+                        CategoryId = categories[i],
+                        SubcategoryId = subcategories[i],
+                        TaskId = tasks[i]
+                    });
+            }
+            taskRelationExisted.Add(taskRelation);
+            await _context.SaveChangesAsync();
+        }
+
+        public async System.Threading.Tasks.Task UpdateConnectedTasks(int cId, int sId, int tId, Models.TaskRelated.Task task)
+        {
+            var tasks = await GetConnectedTaskRelations(cId, sId, tId);
+            if (tasks == null)
+                return;
+
+            foreach (var relation in tasks.TaskSubcategories)
+            {
+                await UpdateTask(relation.CategoryId, relation.SubcategoryId, relation.TaskId, task);
+            }
+        }
+
+        public async System.Threading.Tasks.Task UpdateTask(int categoryId, int subcategoryId, int taskId, Models.TaskRelated.Task task)
+        {
+            var unit = await GetUnit();
+            var sub = unit.Categories
+                    .Where(c => c.Id == categoryId).First().Subcategories
+                    .Where(s => s.Id == subcategoryId).First();
+            var tsk = sub.Tasks
+                 .Where(t => t.Id == taskId).First();
+
+
+
+            tsk.Text = task.Text;
+            tsk.Deadline = task.Deadline;
+            tsk.DoneDate = task.IsChecked && !tsk.IsChecked ? tsk.DoneDate = DateTime.Now : null;
+            tsk.IsChecked = task.IsChecked;
+            await _context.SaveChangesAsync();
+        }
+
+        public async System.Threading.Tasks.Task DeleteRelatedTasks(int categoryId, int subcategoryId, int taskId)
+        {
+            var tasks = await GetConnectedTaskRelations(categoryId, subcategoryId, taskId);
+            if (tasks == null)
+                return;
+
+            var unit = await GetUnit();
+
+            foreach (var relation in tasks.TaskSubcategories)
+            {
+                await DeleteTask(relation.CategoryId, relation.SubcategoryId, relation.TaskId);
+            }
+
+            unit.TaskToManySubcategories.Remove(tasks);
+            await _context.SaveChangesAsync();
+        }
+
+        public async System.Threading.Tasks.Task DeleteTask(int categoryId, int subcategoryId, int taskId)
+        {
+            var sub = await GetSubcategory(categoryId, subcategoryId);
+            var task = sub.Tasks.FirstOrDefault(t => t.Id == taskId);
+
+            if (sub == null)
+            {
+                throw new Exception("Couldn't found such subcategory");
+            }
+
+            sub.Tasks.Remove(task);
+            await _context.SaveChangesAsync();
+
+        }
     }
+
 }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Models.TaskRelated;
 using ProductivityKeeperWeb.Services;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,6 +32,16 @@ namespace ProductivityKeeperWeb.Controllers
                 return Unauthorized();
 
             return unit;
+        }
+
+        [HttpGet("Categories")]
+        public async Task<ActionResult<IEnumerable<Category>>> GetJustCategories()
+        {
+            var unit = await _taskPageHelper.GetUnit();
+            if (unit == null)
+                return Unauthorized();
+
+            return unit.Categories;
         }
 
         // GET: api/Category/5

@@ -1,5 +1,6 @@
 ﻿using ProductivityKeeperWeb.Models;
 using ProductivityKeeperWeb.Models.TaskRelated;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using T = ProductivityKeeperWeb.Models.TaskRelated.Task;
@@ -16,5 +17,15 @@ namespace ProductivityKeeperWeb.Services
         Category FillCategory(Category category);
         Subcategory FillSubcategory(int ctgId, Subcategory subcategory);
         T FillTask(int ctgId, int subId, T task);
+
+        Task<TaskToManySubcategories> GetConnectedTaskRelations(int cId, int sId, int tId);
+        Task<IEnumerable<T>> GetConnectedTasks(int cId, int sId, int tId);
+        System.Threading.Tasks.Task AddConnectedTaskRelation(int cId, int sId, int tId, int[] tasks, int[] categories, int[] subcategories);
+        System.Threading.Tasks.Task UpdateConnectedTasks(int cId, int sId, int tId, T task);
+        System.Threading.Tasks.Task UpdateTask(int categoryId, int subcategoryId, int taskId, T task);
+        System.Threading.Tasks.Task DeleteRelatedTasks(int categoryId, int subcategoryId, int taskId);
+        System.Threading.Tasks.Task DeleteTask(int categoryId, int subcategoryId, int taskId);
+        void ValidateConnectedTaskOnDuplicates(List<TaskToManySubcategories> relations, int tId);
+        System.Threading.Tasks.Task ValidateConnectedTaskOnDuplicatesAsync(int tId);
     }
 }

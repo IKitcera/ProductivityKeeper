@@ -23,12 +23,21 @@ namespace ProductivityKeeperWeb.Services
         public async System.Threading.Tasks.Task<UserStatistic> GetStatistic()
         {
             UserStatistic statistic = new UserStatistic();
-            List<Task> AllTasks = new List<Task>();
 
-            unit.Categories.ForEach(c => c.Subcategories.ForEach(s =>
-            {
-                s.Tasks.ForEach(t => AllTasks.Add(t));
-            }));
+            List<Task> AllTasks = unit.Categories
+                .SelectMany(ctg => ctg.Subcategories
+                .SelectMany(sub => sub.Tasks)).ToList();
+
+            List<Task> ConnectedTasks = unit.TaskToManySubcategories
+                .SelectMany(list => list.TaskSubcategories.Skip(1)
+                .Select(ts => unit.Categories
+                .FirstOrDefault(c => c.Id == ts.CategoryId)?
+                .Subcategories.FirstOrDefault(s => s.Id == ts.SubcategoryId)?.Tasks?
+                .FirstOrDefault(t => t.Id == ts.TaskId))).ToList();
+
+            AllTasks = AllTasks.Where(t => !ConnectedTasks.Select(ct => ct.Id).Contains(t.Id)).ToList();
+
+
             statistic.PercentOfDoneTotal = AllTasks.Count > 0 ? (float)(AllTasks.Where(t => t.IsChecked).Count()) / AllTasks.Count : 0;
 
             statistic.CountOfDoneToday = AllTasks.Where(t => t.DoneDate?.Date == DateTime.Now.Date).Count();
@@ -40,7 +49,7 @@ namespace ProductivityKeeperWeb.Services
 
             statistic.PercentOfDoneToday = countOnToday + countInTodaySub != 0 ?
                 statistic.CountOfDoneToday / (countOnToday + countInTodaySub) :
-                0;
+                (statistic.CountOfDoneToday >=1 ? 1 : 0);
 
 
             statistic.CountOfExpiredTotal = AllTasks.Where(t => t.DoneDate > t.Deadline || (DateTime.Now > t.Deadline && !t.IsChecked)).Count();
@@ -49,9 +58,16 @@ namespace ProductivityKeeperWeb.Services
             statistic.PerDayStatistic = CountDonePerDay(AllTasks);
 
             statistic.PerDayStatistic = unit.Statistic?.PerDayStatistic?.Union(statistic.PerDayStatistic).ToList() ?? statistic.PerDayStatistic;
+            statistic.PerDayStatistic.Reverse();
             unit.Statistic = statistic;
             await _context.SaveChangesAsync();
-            return statistic;
+
+            if (!statistic.PerDayStatistic.Any() ||
+                statistic.PerDayStatistic.Last().Date.Date != DateTime.Now.Date)
+            {
+                statistic.PerDayStatistic.Add(new DonePerDay { Date = DateTime.Now.Date, CountOfDone = 0 });
+            }
+                return statistic;
         }
 
         private List<DonePerDay> CountDonePerDay (List<Task> AllTasks)

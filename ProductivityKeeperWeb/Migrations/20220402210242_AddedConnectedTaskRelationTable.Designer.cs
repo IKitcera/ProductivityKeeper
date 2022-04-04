@@ -3,21 +3,40 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductivityKeeperWeb.Data;
 
 namespace ProductivityKeeperWeb.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220402210242_AddedConnectedTaskRelationTable")]
+    partial class AddedConnectedTaskRelationTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.12")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.TaskToManySubcategories", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("UnitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("TaskToManySubcategories");
+                });
 
             modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Unit", b =>
                 {
@@ -83,6 +102,42 @@ namespace ProductivityKeeperWeb.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserSettings");
+                });
+
+            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.TaskToManySubcategories", b =>
+                {
+                    b.HasOne("ProductivityKeeperWeb.Models.TaskRelated.Unit", null)
+                        .WithMany("TaskToManySubcategories")
+                        .HasForeignKey("UnitId");
+
+                    b.OwnsMany("ProductivityKeeperWeb.Models.TaskRelated.TaskSubcategory", "TaskSubcategories", b1 =>
+                        {
+                            b1.Property<int>("TaskToManySubcategoriesId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<int>("CategoryId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("SubcategoryId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("TaskId")
+                                .HasColumnType("int");
+
+                            b1.HasKey("TaskToManySubcategoriesId", "Id");
+
+                            b1.ToTable("TaskSubcategory");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TaskToManySubcategoriesId");
+                        });
+
+                    b.Navigation("TaskSubcategories");
                 });
 
             modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Unit", b =>
@@ -257,56 +312,6 @@ namespace ProductivityKeeperWeb.Migrations
                             b1.Navigation("Subcategories");
                         });
 
-                    b.OwnsMany("ProductivityKeeperWeb.Models.TaskRelated.TaskToManySubcategories", "TaskToManySubcategories", b1 =>
-                        {
-                            b1.Property<int>("UnitId")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                            b1.HasKey("UnitId", "Id");
-
-                            b1.ToTable("TaskToManySubcategories");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UnitId");
-
-                            b1.OwnsMany("ProductivityKeeperWeb.Models.TaskRelated.TaskSubcategory", "TaskSubcategories", b2 =>
-                                {
-                                    b2.Property<int>("TaskToManySubcategoriesUnitId")
-                                        .HasColumnType("int");
-
-                                    b2.Property<int>("TaskToManySubcategoriesId")
-                                        .HasColumnType("int");
-
-                                    b2.Property<int>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("int")
-                                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                                    b2.Property<int>("CategoryId")
-                                        .HasColumnType("int");
-
-                                    b2.Property<int>("SubcategoryId")
-                                        .HasColumnType("int");
-
-                                    b2.Property<int>("TaskId")
-                                        .HasColumnType("int");
-
-                                    b2.HasKey("TaskToManySubcategoriesUnitId", "TaskToManySubcategoriesId", "Id");
-
-                                    b2.ToTable("TaskSubcategory");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("TaskToManySubcategoriesUnitId", "TaskToManySubcategoriesId");
-                                });
-
-                            b1.Navigation("TaskSubcategories");
-                        });
-
                     b.OwnsOne("ProductivityKeeperWeb.Models.Timer", "Timer", b1 =>
                         {
                             b1.Property<int>("UnitId")
@@ -397,8 +402,6 @@ namespace ProductivityKeeperWeb.Migrations
 
                     b.Navigation("Statistic");
 
-                    b.Navigation("TaskToManySubcategories");
-
                     b.Navigation("Timer");
                 });
 
@@ -409,6 +412,11 @@ namespace ProductivityKeeperWeb.Migrations
                         .HasForeignKey("UserSettingsId");
 
                     b.Navigation("UserSettings");
+                });
+
+            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Unit", b =>
+                {
+                    b.Navigation("TaskToManySubcategories");
                 });
 #pragma warning restore 612, 618
         }

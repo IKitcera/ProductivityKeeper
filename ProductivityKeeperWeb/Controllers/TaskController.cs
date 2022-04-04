@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Data;
@@ -65,33 +64,8 @@ namespace ProductivityKeeperWeb.Controllers
 
             try
             {
-
-                var sub = unit.Categories
-                     .Where(c => c.Id == categoryId).First().Subcategories
-                     .Where(s => s.Id == subcategoryId).First();
-                var tsk = sub.Tasks
-                     .Where(t => t.Id == taskId).First();
-
-
-                
-                tsk.Text = tsk.Text;
-                tsk.Deadline = task.Deadline;
-
-                tsk.DoneDate = task.IsChecked && !tsk.IsChecked ? tsk.DoneDate = DateTime.Now : null;
-
-                tsk.IsChecked = task.IsChecked;
-
-                if (task is ConnectedToDifferentSubcategoriesTask connected)
-                {
-                    for (int i = 0; i < connected.CategoriesId.Count; i++)
-                    {
-                        var s = await helper.GetSubcategory(connected.CategoriesId[i], connected.SubcategoriesId[i]);
-                        s.Tasks.Add(connected);
-                    }
-                }
-
-
-                await _context.SaveChangesAsync();
+                await helper.UpdateTask(categoryId, subcategoryId, taskId, task);
+                await helper.UpdateConnectedTasks(categoryId, subcategoryId, taskId, task);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -106,6 +80,47 @@ namespace ProductivityKeeperWeb.Controllers
             }
 
             return NoContent();
+        }
+
+
+        [HttpPut("edit-connected-task")]
+        public async Task<IActionResult> PutTask(int categoryId, int subcategoryId, int taskId, ConnectedToDifferentSubcategoriesTask task)
+        {
+            try
+            {
+                var needAddRelations = await helper.GetConnectedTaskRelations(categoryId, subcategoryId, taskId) == null;
+                if (needAddRelations)
+                {
+
+                    List<T> tasks = new List<T>();
+                    for (int i = 0; i < task.CategoriesId.Count; i++)
+                    {
+                        var s = await helper.GetSubcategory(task.CategoriesId[i], task.SubcategoriesId[i]);
+                        var newTask = new T { Text = task.Text, DoneDate = task.DoneDate, IsChecked = task.IsChecked, DateOfCreation = task.DateOfCreation };
+                        if (!s.Tasks.Contains(newTask))
+                        {
+                            s.Tasks.Add(newTask);
+                            tasks.Add(newTask);
+                        }
+                    }
+                    await _context.SaveChangesAsync();
+
+                    var taskIds = tasks.Select(x => x.Id);
+                    await helper.AddConnectedTaskRelation(categoryId, subcategoryId, taskId, taskIds.ToArray(), task.CategoriesId.ToArray(), task.SubcategoriesId.ToArray());
+
+                    await helper.UpdateTask(categoryId, subcategoryId, taskId, task as T);
+                }
+                else
+                {
+                    await PutTask(categoryId, subcategoryId, taskId, task as T);
+                }
+               
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // POST: api/Categorys
@@ -124,17 +139,8 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteTask(int categoryId, int subcategoryId, int taskId)
         {
-            var sub = await helper.GetSubcategory(categoryId, subcategoryId);
-            var task = sub.Tasks.FirstOrDefault(t => t.Id == taskId);
-
-            if (sub == null)
-            {
-                return NotFound();
-            }
-
-            sub.Tasks.Remove(task);
-            await _context.SaveChangesAsync();
-
+            await helper.DeleteTask(categoryId, subcategoryId, taskId);
+            await helper.DeleteRelatedTasks(categoryId, subcategoryId, taskId);
             return NoContent();
         }
 
@@ -146,6 +152,13 @@ namespace ProductivityKeeperWeb.Controllers
 
             await _context.SaveChangesAsync();
             return Ok();
+        }
+
+        [HttpGet("getTaskRelation")]
+
+        public async Task<ActionResult<TaskToManySubcategories>> GetTaskRelations(int categoryId, int subcategoryId, int taskId)
+        {
+            return await helper.GetConnectedTaskRelations(categoryId, subcategoryId, taskId) ?? new TaskToManySubcategories();
         }
 
         private bool TaskExists(int categoryId, int subcategoryId, int taskId)
