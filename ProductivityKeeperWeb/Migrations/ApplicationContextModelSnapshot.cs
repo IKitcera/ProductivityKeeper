@@ -87,6 +87,33 @@ namespace ProductivityKeeperWeb.Migrations
 
             modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Unit", b =>
                 {
+                    b.OwnsMany("ProductivityKeeperWeb.Models.TaskRelated.ArchivedTask", "TaskArchive", b1 =>
+                        {
+                            b1.Property<int>("UnitId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<DateTime?>("Deadline")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime?>("DoneDate")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<int>("Status")
+                                .HasColumnType("int");
+
+                            b1.HasKey("UnitId", "Id");
+
+                            b1.ToTable("ArchivedTask");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UnitId");
+                        });
+
                     b.OwnsMany("ProductivityKeeperWeb.Models.TaskRelated.Category", "Categories", b1 =>
                         {
                             b1.Property<int>("UnitId")
@@ -396,6 +423,8 @@ namespace ProductivityKeeperWeb.Migrations
                     b.Navigation("Categories");
 
                     b.Navigation("Statistic");
+
+                    b.Navigation("TaskArchive");
 
                     b.Navigation("TaskToManySubcategories");
 

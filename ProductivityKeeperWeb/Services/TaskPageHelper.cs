@@ -216,8 +216,8 @@ namespace ProductivityKeeperWeb.Services
 
 
             tsk.Text = task.Text;
-            tsk.Deadline = task.Deadline;
-            tsk.DoneDate = task.IsChecked && !tsk.IsChecked ? tsk.DoneDate = DateTime.Now : null;
+            tsk.Deadline = task.Deadline?.ToLocalTime();
+            tsk.DoneDate = task.IsChecked ? DateTime.Now : null;
             tsk.IsChecked = task.IsChecked;
             await _context.SaveChangesAsync();
         }
@@ -249,9 +249,36 @@ namespace ProductivityKeeperWeb.Services
                 throw new Exception("Couldn't found such subcategory");
             }
 
-            sub.Tasks.Remove(task);
-            await _context.SaveChangesAsync();
+            AddDeletingTaskToTheArchive(task);
 
+            sub.Tasks.Remove(task);
+
+            await _context.SaveChangesAsync();
+        }
+
+        private void AddDeletingTaskToTheArchive(Models.TaskRelated.Task task)
+        {
+            if (task == null)
+                return;
+
+            var unit = System.Threading.Tasks.Task.Run(async () => await GetUnit()).Result;
+            var archievedTask = new ArchivedTask();
+            if (task.IsChecked)
+            {
+                archievedTask.Status = ArchievedTaskStatus.Done;
+                archievedTask.DoneDate = task.DoneDate;
+            }
+            else if (task.Deadline.HasValue && DateTime.Now.Date > task.Deadline.Value)
+            {
+                archievedTask.Status = ArchievedTaskStatus.Expired;
+            }
+            else
+            {
+                archievedTask.Status = ArchievedTaskStatus.Undone;
+            }
+            archievedTask.Deadline = task.Deadline;
+
+            unit.TaskArchive.Add(archievedTask);
         }
     }
 

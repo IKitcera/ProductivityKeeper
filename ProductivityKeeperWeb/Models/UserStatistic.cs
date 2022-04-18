@@ -17,6 +17,10 @@ namespace ProductivityKeeperWeb.Models
         public int CountOfDoneToday { get; set; }
         public int CountOfDoneTotal { get; set; }
         public int CountOfExpiredTotal { get; set; }
+        
+        // Won't be writtent to db
+        public int TasksOnToday;
+        public int AllTasksCount;
 
     }
 }
