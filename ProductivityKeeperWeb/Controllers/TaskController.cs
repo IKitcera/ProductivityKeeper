@@ -149,7 +149,22 @@ namespace ProductivityKeeperWeb.Controllers
         {
             var task = await helper.GetTask(categoryId, subcategoryId, taskId);
             task.IsChecked = !task.IsChecked;
+            task.DoneDate = task.IsChecked ? DateTime.Now : null;
+            
 
+            if (task.IsRepeatable && task.IsChecked)
+            {
+                task.TimesToRepeat = task.TimesToRepeat - 1 > 0 ? task.TimesToRepeat - 1 : 0;
+            }
+
+            var connectedTasks = await helper.GetConnectedTasks(categoryId, subcategoryId, taskId);
+            foreach (var connectedTask in connectedTasks)
+            {
+                connectedTask.IsChecked = task.IsChecked;
+                connectedTask.DoneDate = task.DoneDate;
+                connectedTask.IsRepeatable = task.IsRepeatable;
+                connectedTask.TimesToRepeat = task.TimesToRepeat;
+            }
             await _context.SaveChangesAsync();
             return Ok();
         }

@@ -55,8 +55,10 @@ namespace ProductivityKeeperWeb.Services
                     (float)statistic.CountOfDoneToday / statistic.TasksOnToday :
                     (statistic.CountOfDoneToday >= 1 ? 1 : 0);
 
-
-                statistic.CountOfExpiredTotal = AllTasks.Where(t => t.DoneDate?.Date > t.Deadline?.Date || (DateTime.Now.Date > t.Deadline?.Date && !t.IsChecked)).Count();
+                // With deadline and was done later of was not done later
+                statistic.CountOfExpiredTotal = AllTasks.Where(t => t.Deadline.HasValue &&
+                    ((t.DoneDate.HasValue && t.DoneDate.Value > t.Deadline.Value) ||
+                    (DateTime.Now > t.Deadline.Value && !t.IsChecked))).Count();
                 statistic.CountOfDoneTotal = AllTasks.Where(t => t.IsChecked).Count();
 
                 statistic.PerDayStatistic = CountDonePerDayStatistic(AllTasks);

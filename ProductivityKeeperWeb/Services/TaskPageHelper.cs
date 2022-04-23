@@ -139,13 +139,17 @@ namespace ProductivityKeeperWeb.Services
 
         public async Task<IEnumerable<Models.TaskRelated.Task>> GetConnectedTasks(int cId, int sId, int tId)
         {
-            var relation = await GetConnectedTaskRelations(cId, sId, tId);
             IEnumerable<Models.TaskRelated.Task> tasks = new List<Models.TaskRelated.Task>();
 
-            foreach (var x in relation.TaskSubcategories)
+            var relation = await GetConnectedTaskRelations(cId, sId, tId);
+
+            if (relation != null)
             {
-                var task = await GetTask(x.CategoryId, x.SubcategoryId, x.TaskId);
-                (tasks as List<Models.TaskRelated.Task>).Add(task);
+                foreach (var x in relation.TaskSubcategories)
+                {
+                    var task = await GetTask(x.CategoryId, x.SubcategoryId, x.TaskId);
+                    (tasks as List<Models.TaskRelated.Task>).Add(task);
+                }
             }
             return tasks;
         }
@@ -219,6 +223,22 @@ namespace ProductivityKeeperWeb.Services
             tsk.Deadline = task.Deadline?.ToLocalTime();
             tsk.DoneDate = task.IsChecked ? DateTime.Now : null;
             tsk.IsChecked = task.IsChecked;
+
+            tsk.IsRepeatable = task.IsRepeatable;
+
+            if (task.IsRepeatable)
+            {
+                tsk.GoalRepeatCount = task.GoalRepeatCount;
+                tsk.TimesToRepeat = task.GoalRepeatCount;
+                tsk.HabbitIntervalInHours = task.HabbitIntervalInHours;
+            } 
+            else
+            {
+                tsk.GoalRepeatCount = null;
+                tsk.TimesToRepeat = null;
+                tsk.HabbitIntervalInHours = null;
+            }
+
             await _context.SaveChangesAsync();
         }
 
