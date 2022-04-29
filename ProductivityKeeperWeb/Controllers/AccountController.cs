@@ -45,11 +45,11 @@ namespace ProductivityKeeperWeb.Controllers
                     audience: Models.AuthOptions.AUDIENCE,
                     notBefore: now,
                     claims: identity.Claims,
-                    expires: now.Add(TimeSpan.FromMinutes(Models.AuthOptions.LIFETIME)),
+                    expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
                     signingCredentials: new SigningCredentials(Models.AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            return Ok(new { accessToken = encodedJwt });
+            return Ok(new { accessToken = encodedJwt, lifeTime = Models.AuthOptions.LIFETIME });
         }
 
         [HttpPost("/registration")]
@@ -100,11 +100,11 @@ namespace ProductivityKeeperWeb.Controllers
                     audience: Models.AuthOptions.AUDIENCE,
                     notBefore: now,
                     claims: claims,
-                    expires: now.Add(TimeSpan.FromMinutes(Models.AuthOptions.LIFETIME)),
+                    expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
                     signingCredentials: new SigningCredentials(Models.AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            return Ok(new { accessToken = encodedJwt });
+            return Ok(new { accessToken = encodedJwt, lifeTime = AuthOptions.LIFETIME });
 
 
         }
