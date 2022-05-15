@@ -12,16 +12,16 @@ namespace ProductivityKeeperWeb.Services
     public class AnalyticService: IAnalytics
     {
         private readonly ApplicationContext _context;
-        private readonly Unit unit;
         private readonly IHttpContextAccessor _httpContextAccessor;
         public AnalyticService(ApplicationContext _context, IHttpContextAccessor httpContextAccessor)
         {
             this._context = _context;
             _httpContextAccessor = httpContextAccessor;
-            this.unit = _context.Units.FirstOrDefault(u => u.UserId == httpContextAccessor.HttpContext.User.Identity.Name);
         }
-        public async System.Threading.Tasks.Task<UserStatistic> GetStatistic()
+        public async System.Threading.Tasks.Task<UserStatistic> GetStatistic(Unit unit)
         {
+            _context.Entry(unit).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+
             UserStatistic statistic = new UserStatistic();
 
             if (unit.Categories.Any() && unit.Categories.Select(c => c.Subcategories).Any())
@@ -35,7 +35,8 @@ namespace ProductivityKeeperWeb.Services
                     .Select(ts => unit.Categories
                     .FirstOrDefault(c => c.Id == ts.CategoryId)?
                     .Subcategories.FirstOrDefault(s => s.Id == ts.SubcategoryId)?.Tasks?
-                    .FirstOrDefault(t => t.Id == ts.TaskId))).ToList();
+                    .FirstOrDefault(t => t.Id == ts.TaskId)))
+                    .Where(x => x != null).ToList();
 
                 AllTasks = AllTasks.Where(t => !ConnectedTasks.Select(ct => ct.Id).Contains(t.Id)).ToList();
 
@@ -62,23 +63,22 @@ namespace ProductivityKeeperWeb.Services
                 statistic.CountOfDoneTotal = AllTasks.Where(t => t.IsChecked).Count();
 
                 statistic.PerDayStatistic = CountDonePerDayStatistic(AllTasks);
-
-                statistic.PerDayStatistic = unit.Statistic?.PerDayStatistic?.Union(statistic.PerDayStatistic).ToList() ?? statistic.PerDayStatistic;
             }
 
-            UnionWithArchivedTasks(statistic);
-
-            statistic.PerDayStatistic?.Reverse();
+            UnionWithArchivedTasks(statistic, unit);
+            statistic.PerDayStatistic = statistic.PerDayStatistic.OrderBy(x => x.Date).ToList();
+        
             unit.Statistic = statistic;
             
             await _context.SaveChangesAsync();
            
+            // For showing today value
             if (!statistic.PerDayStatistic.Any() ||
                 statistic.PerDayStatistic.Last().Date.Date != DateTime.Now.Date)
             {
                 statistic.PerDayStatistic.Add(new DonePerDay { Date = DateTime.Now.Date, CountOfDone = 0 });
             }
-                return statistic;
+            return statistic;
         }
 
         private List<DonePerDay> CountDonePerDayStatistic (List<Task> AllTasks)
@@ -113,7 +113,7 @@ namespace ProductivityKeeperWeb.Services
             return perDayStatistic;
         }
 
-        private void UnionWithArchivedTasks(UserStatistic statistic)
+        private void UnionWithArchivedTasks(UserStatistic statistic, Unit unit)
         {
             if (!unit.TaskArchive.Any())
                 return;

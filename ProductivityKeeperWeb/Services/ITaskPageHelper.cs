@@ -20,12 +20,14 @@ namespace ProductivityKeeperWeb.Services
 
         Task<TaskToManySubcategories> GetConnectedTaskRelations(int cId, int sId, int tId);
         Task<IEnumerable<T>> GetConnectedTasks(int cId, int sId, int tId);
-        System.Threading.Tasks.Task AddConnectedTaskRelation(int cId, int sId, int tId, int[] tasks, int[] categories, int[] subcategories);
+        System.Threading.Tasks.Task<TaskToManySubcategories> AddConnectedTaskRelation(int[] categories, int[] subcategories, int[] tasks);
+        System.Threading.Tasks.Task FullEditOfConnectedTask(int categoryId, int subcategoryId, int taskId, ConnectedToDifferentSubcategoriesTask task);
         System.Threading.Tasks.Task UpdateConnectedTasks(int cId, int sId, int tId, T task);
         System.Threading.Tasks.Task UpdateTask(int categoryId, int subcategoryId, int taskId, T task);
         System.Threading.Tasks.Task DeleteRelatedTasks(int categoryId, int subcategoryId, int taskId);
         System.Threading.Tasks.Task DeleteTask(int categoryId, int subcategoryId, int taskId);
         void ValidateConnectedTaskOnDuplicates(List<TaskToManySubcategories> relations, int tId);
         System.Threading.Tasks.Task ValidateConnectedTaskOnDuplicatesAsync(int tId);
+        System.Threading.Tasks.Task ChangeStatus(int categoryId, int subcategoryId, int taskId);
     }
 }

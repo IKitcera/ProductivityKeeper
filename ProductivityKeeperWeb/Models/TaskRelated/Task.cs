@@ -24,7 +24,8 @@ namespace ProductivityKeeperWeb.Models.TaskRelated
         public int ? GoalRepeatCount { get; set; }
 
         public double ? HabbitIntervalInHours { get; set; }
-       
+        //-----Connected tasks
+        public int ? RelationId { get; set; }
         public Task()
         {
             DateOfCreation = DateTime.Now;

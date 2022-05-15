@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductivityKeeperWeb.Data;
 
 namespace ProductivityKeeperWeb.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20220508152020_TasksRElatedAddedToModel")]
+    partial class TasksRElatedAddedToModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -287,6 +289,73 @@ namespace ProductivityKeeperWeb.Migrations
 
                                             b3.WithOwner()
                                                 .HasForeignKey("SubcategoryCategoryUnitId", "SubcategoryCategoryId", "SubcategoryId");
+
+                                            b3.OwnsOne("ProductivityKeeperWeb.Models.TaskRelated.TaskToManySubcategories", "RelatedTasks", b4 =>
+                                                {
+                                                    b4.Property<int>("TaskSubcategoryCategoryUnitId")
+                                                        .HasColumnType("int");
+
+                                                    b4.Property<int>("TaskSubcategoryCategoryId")
+                                                        .HasColumnType("int");
+
+                                                    b4.Property<int>("TaskSubcategoryId")
+                                                        .HasColumnType("int");
+
+                                                    b4.Property<int>("TaskId")
+                                                        .ValueGeneratedOnAdd()
+                                                        .HasColumnType("int")
+                                                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                                                    b4.Property<int>("Id")
+                                                        .HasColumnType("int");
+
+                                                    b4.HasKey("TaskSubcategoryCategoryUnitId", "TaskSubcategoryCategoryId", "TaskSubcategoryId", "TaskId");
+
+                                                    b4.ToTable("Task");
+
+                                                    b4.WithOwner()
+                                                        .HasForeignKey("TaskSubcategoryCategoryUnitId", "TaskSubcategoryCategoryId", "TaskSubcategoryId", "TaskId");
+
+                                                    b4.OwnsMany("ProductivityKeeperWeb.Models.TaskRelated.TaskSubcategory", "TaskSubcategories", b5 =>
+                                                        {
+                                                            b5.Property<int>("TaskToManySubcategoriesTaskSubcategoryCategoryUnitId")
+                                                                .HasColumnType("int");
+
+                                                            b5.Property<int>("TaskToManySubcategoriesTaskSubcategoryCategoryId")
+                                                                .HasColumnType("int");
+
+                                                            b5.Property<int>("TaskToManySubcategoriesTaskSubcategoryId")
+                                                                .HasColumnType("int");
+
+                                                            b5.Property<int>("TaskToManySubcategoriesTaskId")
+                                                                .HasColumnType("int");
+
+                                                            b5.Property<int>("Id")
+                                                                .ValueGeneratedOnAdd()
+                                                                .HasColumnType("int")
+                                                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                                                            b5.Property<int>("CategoryId")
+                                                                .HasColumnType("int");
+
+                                                            b5.Property<int>("SubcategoryId")
+                                                                .HasColumnType("int");
+
+                                                            b5.Property<int>("TaskId")
+                                                                .HasColumnType("int");
+
+                                                            b5.HasKey("TaskToManySubcategoriesTaskSubcategoryCategoryUnitId", "TaskToManySubcategoriesTaskSubcategoryCategoryId", "TaskToManySubcategoriesTaskSubcategoryId", "TaskToManySubcategoriesTaskId", "Id");
+
+                                                            b5.ToTable("Task_TaskSubcategories");
+
+                                                            b5.WithOwner()
+                                                                .HasForeignKey("TaskToManySubcategoriesTaskSubcategoryCategoryUnitId", "TaskToManySubcategoriesTaskSubcategoryCategoryId", "TaskToManySubcategoriesTaskSubcategoryId", "TaskToManySubcategoriesTaskId");
+                                                        });
+
+                                                    b4.Navigation("TaskSubcategories");
+                                                });
+
+                                            b3.Navigation("RelatedTasks");
                                         });
 
                                     b2.Navigation("Color");
@@ -311,7 +380,7 @@ namespace ProductivityKeeperWeb.Migrations
 
                             b1.HasKey("UnitId", "Id");
 
-                            b1.ToTable("TaskToManySubcategories");
+                            b1.ToTable("Units_TaskToManySubcategories");
 
                             b1.WithOwner()
                                 .HasForeignKey("UnitId");
@@ -340,7 +409,7 @@ namespace ProductivityKeeperWeb.Migrations
 
                                     b2.HasKey("TaskToManySubcategoriesUnitId", "TaskToManySubcategoriesId", "Id");
 
-                                    b2.ToTable("TaskSubcategory");
+                                    b2.ToTable("Units_TaskToManySubcategories_TaskSubcategories");
 
                                     b2.WithOwner()
                                         .HasForeignKey("TaskToManySubcategoriesUnitId", "TaskToManySubcategoriesId");

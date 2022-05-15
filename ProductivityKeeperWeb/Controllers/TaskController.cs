@@ -65,7 +65,7 @@ namespace ProductivityKeeperWeb.Controllers
             try
             {
                 await helper.UpdateTask(categoryId, subcategoryId, taskId, task);
-                await helper.UpdateConnectedTasks(categoryId, subcategoryId, taskId, task);
+                // await helper.UpdateConnectedTasks(categoryId, subcategoryId, taskId, task);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -88,33 +88,7 @@ namespace ProductivityKeeperWeb.Controllers
         {
             try
             {
-                var needAddRelations = await helper.GetConnectedTaskRelations(categoryId, subcategoryId, taskId) == null;
-                if (needAddRelations)
-                {
-
-                    List<T> tasks = new List<T>();
-                    for (int i = 0; i < task.CategoriesId.Count; i++)
-                    {
-                        var s = await helper.GetSubcategory(task.CategoriesId[i], task.SubcategoriesId[i]);
-                        var newTask = new T { Text = task.Text, DoneDate = task.DoneDate, IsChecked = task.IsChecked, DateOfCreation = task.DateOfCreation };
-                        if (!s.Tasks.Contains(newTask))
-                        {
-                            s.Tasks.Add(newTask);
-                            tasks.Add(newTask);
-                        }
-                    }
-                    await _context.SaveChangesAsync();
-
-                    var taskIds = tasks.Select(x => x.Id);
-                    await helper.AddConnectedTaskRelation(categoryId, subcategoryId, taskId, taskIds.ToArray(), task.CategoriesId.ToArray(), task.SubcategoriesId.ToArray());
-
-                    await helper.UpdateTask(categoryId, subcategoryId, taskId, task as T);
-                }
-                else
-                {
-                    await PutTask(categoryId, subcategoryId, taskId, task as T);
-                }
-               
+                await helper.FullEditOfConnectedTask(categoryId, subcategoryId, taskId, task);
                 return Ok();
             }
             catch (Exception ex)
@@ -130,6 +104,12 @@ namespace ProductivityKeeperWeb.Controllers
         {
             var sub = await helper.GetSubcategory(categoryId, subcategoryId);
             task = helper.FillTask(categoryId, subcategoryId, task);
+
+            if (sub.Name.ToLower() == "today")
+            {
+                task.Deadline ??= DateTime.Now.Date.AddDays(1).Subtract(new TimeSpan(0, 0, 1));
+            }
+
             sub.Tasks.Add(task);
             await _context.SaveChangesAsync();
             return CreatedAtAction("GetTask", new { id = task.Id }, task);
@@ -147,34 +127,16 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpPost("/changeStatus")]
         public async Task<IActionResult> ChangeStatus(int categoryId, int subcategoryId, int taskId)
         {
-            var task = await helper.GetTask(categoryId, subcategoryId, taskId);
-            task.IsChecked = !task.IsChecked;
-            task.DoneDate = task.IsChecked ? DateTime.Now : null;
-            
-
-            if (task.IsRepeatable && task.IsChecked)
-            {
-                task.TimesToRepeat = task.TimesToRepeat - 1 > 0 ? task.TimesToRepeat - 1 : 0;
-            }
-
-            var connectedTasks = await helper.GetConnectedTasks(categoryId, subcategoryId, taskId);
-            foreach (var connectedTask in connectedTasks)
-            {
-                connectedTask.IsChecked = task.IsChecked;
-                connectedTask.DoneDate = task.DoneDate;
-                connectedTask.IsRepeatable = task.IsRepeatable;
-                connectedTask.TimesToRepeat = task.TimesToRepeat;
-            }
-            await _context.SaveChangesAsync();
+            await helper.ChangeStatus(categoryId, subcategoryId, taskId);
             return Ok();
         }
 
         [HttpGet("getTaskRelation")]
-
-        public async Task<ActionResult<TaskToManySubcategories>> GetTaskRelations(int categoryId, int subcategoryId, int taskId)
+        public async Task<ActionResult<TaskToManySubcategories>> GetTaskRelation(int categoryId, int subcategoryId, int taskId)
         {
             return await helper.GetConnectedTaskRelations(categoryId, subcategoryId, taskId) ?? new TaskToManySubcategories();
         }
+
 
         private bool TaskExists(int categoryId, int subcategoryId, int taskId)
         {

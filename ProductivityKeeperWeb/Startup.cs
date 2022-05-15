@@ -57,7 +57,20 @@ namespace ProductivityKeeperWeb
                        .AllowAnyMethod();
                 });
             });
-            
+
+            services.AddMvcCore()
+              .AddMvcOptions(options =>
+              {
+                  options.SuppressOutputFormatterBuffering = true;
+                  options.Filters.Add(typeof(GlobalExceptionFilter));
+              }).AddApiExplorer()
+                .AddAuthorization()
+                .AddFormatterMappings()
+                .AddViews()
+                .AddRazorViewEngine()
+                .AddCacheTagHelper()
+                .AddDataAnnotations(); ;
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProductivityKeeperWeb", Version = "v1" });
@@ -88,6 +101,7 @@ namespace ProductivityKeeperWeb
             services.AddControllers();
             services.AddScoped<ITaskPageHelper, TaskPageHelper>();
             services.AddScoped<IAnalytics, AnalyticService>();
+          
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
