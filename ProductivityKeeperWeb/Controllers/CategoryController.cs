@@ -127,6 +127,10 @@ namespace ProductivityKeeperWeb.Controllers
                 return BadRequest();
 
             unit.Categories.Add(Category);
+            unit.Categories.ForEach(c =>
+            {
+                c.Position = unit.Categories.IndexOf(c);
+            });
 
             try
             {
@@ -147,22 +151,56 @@ namespace ProductivityKeeperWeb.Controllers
             return CreatedAtAction("GetCategory", new { id = Category.Id }, Category);
         }
 
-        // DELETE: api/Category/5
-        [HttpDelete]
+        [HttpPut("changeOrder")]
+        public async Task<IActionResult> PostCategory(IEnumerable<Category> categories)
+        {
+            var unit = await _taskPageHelper.GetUnit();
+            var ctgIds = categories.Select(c => c.Id).ToList();
+            var visibilityArray = categories.Select(c => c.IsVisible).ToList();
+
+            foreach (var c in unit.Categories)
+            {
+                int index = ctgIds.IndexOf(c.Id);
+                c.Position = index;
+                c.IsVisible = visibilityArray[index];
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+            // DELETE: api/Category/5
+            [HttpDelete]
         public async Task<IActionResult> DeleteCategory(int categoryId)
         {
             var unit = await _taskPageHelper.GetUnit();
             if (unit == null)
                 return Unauthorized();
 
-            var Category = unit.Categories.FirstOrDefault(cat => cat.Id == categoryId);
+            var category = unit.Categories.FirstOrDefault(cat => cat.Id == categoryId);
 
-            if (Category == null)
+            if (category == null)
             {
                 return NotFound();
             }
 
-            unit.Categories.Remove(Category);
+            if(category.Subcategories.Any())
+            {
+                foreach(var sub in category.Subcategories)
+                {
+                    if (sub.Tasks.Any())
+                    {
+                        foreach (var task in sub.Tasks)
+                            await _taskPageHelper.DeleteRelatedTasks(categoryId, sub.Id, task.Id);
+                    }
+                }
+            }
+
+            unit.Categories.Remove(category);
+            unit.Categories.ForEach(c =>
+            {
+                c.Position = unit.Categories.IndexOf(c);
+            });
             await _context.SaveChangesAsync();
 
             return NoContent();

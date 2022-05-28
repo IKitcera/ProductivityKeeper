@@ -32,7 +32,7 @@ namespace ProductivityKeeperWeb.Controllers
             var identity = await GetIdentity(username, password);
             if (identity == null)
             {
-                return BadRequest(new { errorText = "Invalid username or password." });
+                return BadRequest(new { message = "Invalid username or password." });
             }
 
 
@@ -56,7 +56,7 @@ namespace ProductivityKeeperWeb.Controllers
         public async Task<IActionResult> Registrate(AbstractUser user)
         {
             if (await UserExists(user.Email))
-                return BadRequest("User with this email already exists");
+                return BadRequest(new { message = "User with this email already exists" });
 
             var unit = new Unit { UserId = user.Email };
             await _context.Units.AddAsync(unit);
@@ -94,7 +94,7 @@ namespace ProductivityKeeperWeb.Controllers
             new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
 
-            // создаем JWT-токен
+            // JWT-token
             var jwt = new JwtSecurityToken(
                     issuer: Models.AuthOptions.ISSUER,
                     audience: Models.AuthOptions.AUDIENCE,
@@ -125,7 +125,6 @@ namespace ProductivityKeeperWeb.Controllers
                 return claimsIdentity;
             }
 
-            // если пользователя не найдено
             return null;
         }
 

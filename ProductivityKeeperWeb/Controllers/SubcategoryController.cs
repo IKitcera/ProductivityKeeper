@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Data;
@@ -17,7 +16,7 @@ namespace ProductivityKeeperWeb.Controllers
     public class SubcategoryController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        private readonly ITaskPageHelper _taskPageHelper; 
+        private readonly ITaskPageHelper _taskPageHelper;
         public SubcategoryController(ApplicationContext context, ITaskPageHelper _helper)
         {
             _context = context;
@@ -57,15 +56,13 @@ namespace ProductivityKeeperWeb.Controllers
                 return BadRequest();
             }
 
-            var unit = _taskPageHelper.GetUnit();
-
+            var unit = await _taskPageHelper.GetUnit();
             _context.Entry(unit).State = EntityState.Modified;
 
             try
             {
-                var ctg = await _taskPageHelper.GetCategory(categoryId);
-                var sub = ctg.Subcategories.FirstOrDefault(scat => scat.Id == subcategoryId);
-                sub = subcategory;
+                var sub = await _taskPageHelper.GetSubcategory(categoryId, subcategoryId);
+                sub.Name = subcategory.Name;
 
                 await _context.SaveChangesAsync();
             }
@@ -114,9 +111,16 @@ namespace ProductivityKeeperWeb.Controllers
                 return NotFound();
             }
 
+            if (sub.Tasks.Any())
+            {
+                foreach (var task in sub.Tasks)
+                    await _taskPageHelper.DeleteRelatedTasks(categoryId, subcategoryId, task.Id);
+            }
+
+
             ctg.Subcategories.Remove(sub);
-            
-            for(int i = sub.Position; i < ctg.Subcategories.Count; i++)
+
+            for (int i = sub.Position; i < ctg.Subcategories.Count; i++)
             {
                 ctg.Subcategories[i].Position = i;
             }
@@ -128,15 +132,9 @@ namespace ProductivityKeeperWeb.Controllers
 
         private bool SubcategoryExists(int categoryId, int subcategoryId)
         {
-            Category ctg = null;
-            System.Threading.Tasks.Task.Run(async () => ctg = await _taskPageHelper.GetCategory(categoryId));
-
-            if (ctg != null)
-                return ctg.Subcategories.Any(cat => cat.Id == categoryId);
-
-            return false;
+            return _taskPageHelper.GetSubcategory(categoryId, subcategoryId).Result != null;
         }
 
-       
+
     }
 }

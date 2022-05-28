@@ -32,14 +32,25 @@ namespace ProductivityKeeperWeb.Services
 
             var userId = User.Name;
             var unit = await _context.Units.FirstOrDefaultAsync(u => u.UserId == userId);
-            unit.Categories.ForEach(ctg =>
+
+            if (unit.Categories.Any())
             {
-                ctg.Subcategories.ForEach(sub =>
+                foreach (var c in unit.Categories)
                 {
-                    sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ToList();
-                });
-                ctg.Subcategories = ctg.Subcategories.OrderBy(s => s.Position).ToList();
-            });
+                    if (!c.Subcategories.Any())
+                        continue;
+
+                    foreach (var s in c.Subcategories)
+                    {
+                        if (s.Tasks.Any())
+                            s.Tasks = s.Tasks.OrderBy(x => x.IsChecked).ToList();
+                    }
+
+                    c.Subcategories = c.Subcategories.OrderBy(s => s.Position).ToList();
+                }
+                unit.Categories = unit.Categories.OrderBy(c => c.Position).ToList();
+            }
+             await _context.SaveChangesAsync();
 
             return unit;
         }
@@ -51,6 +62,9 @@ namespace ProductivityKeeperWeb.Services
             if (unit != null && unit.Categories.Count >= 0)
             {
                 var ctg = unit.Categories.FirstOrDefault(cat => cat.Id == categoryId);
+
+                if (ctg == null) return null;
+
                 ctg.Subcategories.ForEach(sub =>
                 {
                     sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ToList();
@@ -66,6 +80,7 @@ namespace ProductivityKeeperWeb.Services
         {
             var ctg = await GetCategory(categoryId);
             var sub = ctg?.Subcategories.FirstOrDefault(s => s.Id == subcategoryId);
+            if (sub == null) return null;
             sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ToList();
             return sub;
         }
@@ -95,6 +110,8 @@ namespace ProductivityKeeperWeb.Services
                 string newGeneratedName = nameof(Category) + " " + (int.Parse(lastGeneratedName.Substring((nameof(Category).Length))) + 1).ToString();
                 category.Name = newGeneratedName;
             }
+            category.IsVisible = true;
+
             category.DateOfCreation = System.DateTime.Now;
             return category;
         }
@@ -149,7 +166,8 @@ namespace ProductivityKeeperWeb.Services
                 foreach (var x in relation.TaskSubcategories)
                 {
                     var task = await GetTask(x.CategoryId, x.SubcategoryId, x.TaskId);
-                    (tasks as List<Models.TaskRelated.Task>).Add(task);
+                    if(task != null)
+                        (tasks as List<Models.TaskRelated.Task>).Add(task);
                 }
             }
             return tasks;
@@ -256,14 +274,7 @@ namespace ProductivityKeeperWeb.Services
 
                     s.Tasks.Add(newTask);
                     tasks.Add(newTask);
-                 //   ctgIds.Add(task.CategoriesId[i]);
-                  //  subIds.Add(task.SubcategoriesId[i]);
                 }
-                //else
-                //{
-
-                // notAddedIds.Add(i);
-                // }
             }
 
             await _context.SaveChangesAsync();
@@ -276,13 +287,6 @@ namespace ProductivityKeeperWeb.Services
             var taskIds = tasks.Select(x => x.Id).ToList();
 
 
-
-            //for (int i = 0; i < notAddedIds.Count; i++)
-            //{
-            //    ctgIds.RemoveAt(notAddedIds[i]);
-            //    subIds.RemoveAt(notAddedIds[i]);
-            //    taskIds.RemoveAt(notAddedIds[i]);
-            //}
 
             await DeleteUnusedConnectedRelation(connections, taskIds);
 
@@ -328,8 +332,10 @@ namespace ProductivityKeeperWeb.Services
 
             if (task.IsRepeatable)
             {
+                var completed = tsk.GoalRepeatCount - tsk.TimesToRepeat;
+
                 tsk.GoalRepeatCount = task.GoalRepeatCount;
-                tsk.TimesToRepeat = task.GoalRepeatCount;
+                tsk.TimesToRepeat = completed > 0 ? task.GoalRepeatCount - completed : task.GoalRepeatCount;
                 tsk.HabbitIntervalInHours = task.HabbitIntervalInHours;
             }
             else
