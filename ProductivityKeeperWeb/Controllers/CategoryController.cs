@@ -16,11 +16,11 @@ namespace ProductivityKeeperWeb.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        private readonly ITaskPageHelper _taskPageHelper;   
+        private readonly ITaskPageHelper _taskPageHelper;
         public CategoryController(ApplicationContext context, ITaskPageHelper _helper)
         {
             _context = context;
-            _taskPageHelper = _helper;  
+            _taskPageHelper = _helper;
         }
 
 
@@ -71,9 +71,9 @@ namespace ProductivityKeeperWeb.Controllers
             {
                 return BadRequest();
             }
-            
+
             var unit = await _taskPageHelper.GetUnit();
-           
+
             if (unit == null)
                 return Unauthorized();
 
@@ -81,7 +81,7 @@ namespace ProductivityKeeperWeb.Controllers
 
             try
             {
-               
+
                 var ctg = unit.Categories.Where(c => c.Id == categoryId).First();
                 ctg.Name = category.Name;
                 ctg.Color = category.Color;
@@ -96,7 +96,7 @@ namespace ProductivityKeeperWeb.Controllers
                 });
 
                 await _context.SaveChangesAsync();
-                
+
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -169,8 +169,23 @@ namespace ProductivityKeeperWeb.Controllers
             return Ok();
         }
 
-            // DELETE: api/Category/5
-            [HttpDelete]
+        [HttpPut("clearArchive")]
+        public async Task<IActionResult> ClearArchive()
+        {
+            var unit = await _taskPageHelper.GetUnit();
+
+            _context.Entry(unit).State = EntityState.Modified;
+
+            unit.TaskArchive = new List<ArchivedTask>();
+            unit.Statistic.PerDayStatistic = new List<Models.DonePerDay>();
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // DELETE: api/Category/5
+        [HttpDelete]
         public async Task<IActionResult> DeleteCategory(int categoryId)
         {
             var unit = await _taskPageHelper.GetUnit();
@@ -184,9 +199,9 @@ namespace ProductivityKeeperWeb.Controllers
                 return NotFound();
             }
 
-            if(category.Subcategories.Any())
+            if (category.Subcategories.Any())
             {
-                foreach(var sub in category.Subcategories)
+                foreach (var sub in category.Subcategories)
                 {
                     if (sub.Tasks.Any())
                     {

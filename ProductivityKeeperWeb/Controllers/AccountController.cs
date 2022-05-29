@@ -80,6 +80,27 @@ namespace ProductivityKeeperWeb.Controllers
         }
 
         [Authorize]
+        [HttpPost("checkPasswordIfMatch")]
+        public async Task<ActionResult<bool>> CheckOnPasswordMatch(string password)
+        {
+            var user = await _context.Users.FindAsync(User.Identity.Name);
+            return user.HashPassword == password;
+        }
+
+        [Authorize]
+        [HttpPost("changePassword")]
+        public async Task<IActionResult> ChangePasssword(string newPassword)
+        {
+            var user = await _context.Users.FindAsync(User.Identity.Name);
+
+            _context.Entry(user).State = EntityState.Modified;
+            user.HashPassword = newPassword;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+
+        [Authorize]
         [HttpPost("/refresh-token")]
         public async Task<ActionResult<string>> RefreshToken()
         {

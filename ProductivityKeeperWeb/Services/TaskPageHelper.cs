@@ -50,7 +50,7 @@ namespace ProductivityKeeperWeb.Services
                 }
                 unit.Categories = unit.Categories.OrderBy(c => c.Position).ToList();
             }
-             await _context.SaveChangesAsync();
+         //    await _context.SaveChangesAsync();
 
             return unit;
         }
