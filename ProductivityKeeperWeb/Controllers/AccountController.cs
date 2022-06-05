@@ -59,6 +59,7 @@ namespace ProductivityKeeperWeb.Controllers
                 return BadRequest(new { message = "User with this email already exists" });
 
             var unit = new Unit { UserId = user.Email };
+            unit = _helper.FillUnitForNewcommer(unit);
             await _context.Units.AddAsync(unit);
             await _context.SaveChangesAsync();
 

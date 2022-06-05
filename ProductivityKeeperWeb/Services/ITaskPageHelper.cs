@@ -14,6 +14,7 @@ namespace ProductivityKeeperWeb.Services
         Task<Category> GetCategory(int categoryId);
         Task<Subcategory> GetSubcategory(int categoryId, int subcategoryId);
         Task<T> GetTask(int categoryId, int subcategoryId, int taskId);
+        Unit FillUnitForNewcommer(Unit unit);
         Category FillCategory(Category category);
         Subcategory FillSubcategory(int ctgId, Subcategory subcategory);
         T FillTask(int ctgId, int subId, T task);

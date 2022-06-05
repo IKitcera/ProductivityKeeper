@@ -47,5 +47,15 @@ namespace ProductivityKeeperWeb.Controllers
             await context.SaveChangesAsync();
             return Ok();
         }
+
+        [HttpPut("update-format")]
+        public async System.Threading.Tasks.Task<IActionResult> UpdateFormat(int newFormat)
+        {
+            var unit = await helper.GetUnit();
+            context.Entry(unit).State = EntityState.Modified;
+            unit.Timer.Format = newFormat;
+            await context.SaveChangesAsync();
+            return Ok();
+        }
     }
 }

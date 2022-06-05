@@ -20,6 +20,7 @@ namespace ProductivityKeeperWeb.Data
         public DbSet<Unit> Units { get; set; }
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
+            Database.SetCommandTimeout((int)TimeSpan.FromSeconds(30).TotalSeconds);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

@@ -163,6 +163,7 @@ namespace ProductivityKeeperWeb.Controllers
                 int index = ctgIds.IndexOf(c.Id);
                 c.Position = index;
                 c.IsVisible = visibilityArray[index];
+                c.Color = categories.ElementAt(index).Color;
             }
 
             await _context.SaveChangesAsync();

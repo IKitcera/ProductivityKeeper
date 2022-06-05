@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using T = ProductivityKeeperWeb.Models.TaskRelated.Task;
+using Task = ProductivityKeeperWeb.Models.TaskRelated.Task;
 
 namespace ProductivityKeeperWeb.Services
 {
@@ -50,7 +51,7 @@ namespace ProductivityKeeperWeb.Services
                 }
                 unit.Categories = unit.Categories.OrderBy(c => c.Position).ToList();
             }
-         //    await _context.SaveChangesAsync();
+            //    await _context.SaveChangesAsync();
 
             return unit;
         }
@@ -134,7 +135,8 @@ namespace ProductivityKeeperWeb.Services
                 subcategory.Name = newGeneratedName;
             }
             subcategory.DateOfCreation = System.DateTime.Now;
-            subcategory.Position = ctg.Subcategories.Count;
+            if(ctgId != 0)
+                subcategory.Position = ctg.Subcategories.Count;
             return subcategory;
         }
 
@@ -166,7 +168,7 @@ namespace ProductivityKeeperWeb.Services
                 foreach (var x in relation.TaskSubcategories)
                 {
                     var task = await GetTask(x.CategoryId, x.SubcategoryId, x.TaskId);
-                    if(task != null)
+                    if (task != null)
                         (tasks as List<Models.TaskRelated.Task>).Add(task);
                 }
             }
@@ -190,6 +192,7 @@ namespace ProductivityKeeperWeb.Services
 
         public async System.Threading.Tasks.Task<TaskToManySubcategories> AddConnectedTaskRelation(int[] categories, int[] subcategories, int[] tasks)
         {
+            var unit = await GetUnit();
             var taskRelationExisted = (await GetUnit()).TaskToManySubcategories;
             var existedTaskSub = taskRelationExisted.FirstOrDefault(t => t.TaskSubcategories.Any(t => tasks.Any(id => id == t.TaskId)));
 
@@ -212,9 +215,9 @@ namespace ProductivityKeeperWeb.Services
             else
                 existedTaskSub.TaskSubcategories = taskRelation.TaskSubcategories;
 
+            await EnterModifyState(unit);
             await _context.SaveChangesAsync();
 
-            var unit = await GetUnit();
             var relationAfterSave = unit.TaskToManySubcategories.Find(t => t.TaskSubcategories == taskRelation.TaskSubcategories);
             return relationAfterSave;
         }
@@ -277,6 +280,7 @@ namespace ProductivityKeeperWeb.Services
                 }
             }
 
+            await this.EnterModifyState();
             await _context.SaveChangesAsync();
 
 
@@ -313,7 +317,6 @@ namespace ProductivityKeeperWeb.Services
         {
             var unit = await GetUnit();
 
-            await EnterModifyState(unit);
 
             var sub = unit.Categories
                     .Where(c => c.Id == categoryId).First().Subcategories
@@ -347,6 +350,7 @@ namespace ProductivityKeeperWeb.Services
 
             tsk.RelationId = task.RelationId;
 
+            await EnterModifyState(unit);
             await _context.SaveChangesAsync();
         }
 
@@ -446,7 +450,9 @@ namespace ProductivityKeeperWeb.Services
         {
             if (connections != null)
             {
-                foreach (var c in connections.TaskSubcategories.Where(ts => !taskIds.Contains(ts.TaskId)))
+                var unusedConnections = connections.TaskSubcategories.Where(ts => !taskIds.Contains(ts.TaskId));
+
+                foreach (var c in unusedConnections)
                 {
                     var sub = await GetSubcategory(c.CategoryId, c.SubcategoryId);
                     var t = sub.Tasks.FirstOrDefault(tt => tt.Id == c.TaskId);
@@ -454,7 +460,7 @@ namespace ProductivityKeeperWeb.Services
                 }
             }
 
-
+            await EnterModifyState();
             await _context.SaveChangesAsync();
         }
 
@@ -467,6 +473,76 @@ namespace ProductivityKeeperWeb.Services
                     t.RelationId = newConnections.Id;
                 }
             }
+        }
+
+
+
+        //---------------------
+
+        public Unit FillUnitForNewcommer(Unit unit)
+        {
+            var timeCtg = new Category
+            {
+                Name = "Time",
+                IsVisible = true,
+                Position = 1,
+                Subcategories = new List<Subcategory> {
+                new Subcategory { Name = "Today", Position=0},
+                new Subcategory { Name = "Tomorrow", Position = 1},
+                new Subcategory {Name = "Week", Position=2},
+                new Subcategory {Name = "Month", Position=3},
+                new Subcategory {Name = "Year", Position=4}
+            }
+            };
+            var aspectCtg = new Category
+            {
+                Name = "Aspects",
+                IsVisible = true,
+                Position = 0,
+                Subcategories = new List<Subcategory> {
+                    new Subcategory { Name = "Work", Position = 0, Tasks = new List<Task> {
+                        new Task { Text = "Finish work" }
+                    }
+                    },
+                    new Subcategory { Name = "Personal development", Position = 1, Tasks = new List<Task>
+                    {
+                        new Task { Text = "Read 30 pages of the book" }
+                    }
+                    },
+
+                    new Subcategory { Name = "Home", Position = 2 },
+                    new Subcategory { Name = "Relax", Position = 3, Tasks = new List<Task>
+                    {
+                        new Task { Text = "Be happy", IsChecked = true }
+                    }
+                    }
+                }
+            };
+
+            timeCtg = FillCategory(timeCtg);
+            aspectCtg = FillCategory(aspectCtg);
+
+            unit.Categories.Add(aspectCtg);
+            unit.Categories.Add(timeCtg);
+
+            unit.Categories.ForEach(c =>
+            {
+                c.Subcategories.ForEach(s =>
+                {
+                    s = FillSubcategory(c.Id, s);
+                    s.Tasks.ForEach(t =>
+                    {
+                        t = FillTask(c.Id, s.Id, t);
+                    });
+                });
+            });
+
+
+            unit.Timer.Label = "Learn English";
+            unit.Timer.Goal = 92 * 24 * 3600;
+            unit.Timer.Ticked = 0;
+
+            return unit;
         }
     }
 
