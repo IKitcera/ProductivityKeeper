@@ -8,7 +8,6 @@ using ProductivityKeeperWeb.Models.TaskRelated;
 using ProductivityKeeperWeb.Services;
 using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -20,14 +19,14 @@ namespace ProductivityKeeperWeb.Controllers
     {
         private readonly ApplicationContext _context;
         private readonly ITaskPageHelper _helper;
-        public AccountController(ApplicationContext context, ITaskPageHelper helper )
+        public AccountController(ApplicationContext context, ITaskPageHelper helper)
         {
             _context = context;
             _helper = helper;
         }
 
         [HttpPost("/token")]
-        public async Task<ActionResult<string>> GetToken(string username, string password)
+        public async Task<ActionResult<object>> GetToken(string username, string password)
         {
             var identity = await GetIdentity(username, password);
             if (identity == null)
@@ -53,7 +52,7 @@ namespace ProductivityKeeperWeb.Controllers
         }
 
         [HttpPost("/registration")]
-        public async Task<IActionResult> Registrate(AbstractUser user)
+        public async Task<ActionResult<object>> Registrate(AbstractUser user)
         {
             if (await UserExists(user.Email))
                 return BadRequest(new { message = "User with this email already exists" });
@@ -76,8 +75,8 @@ namespace ProductivityKeeperWeb.Controllers
 
             await _context.Users.AddAsync(concerteUser);
             await _context.SaveChangesAsync();
-           
-            return Ok();
+
+            return await GetToken(user.Email, user.HashPassword);
         }
 
         [Authorize]
@@ -103,7 +102,7 @@ namespace ProductivityKeeperWeb.Controllers
 
         [Authorize]
         [HttpPost("/refresh-token")]
-        public async Task<ActionResult<string>> RefreshToken()
+        public async Task<ActionResult<object>> RefreshToken()
         {
             var now = DateTime.UtcNow;
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
@@ -116,7 +115,7 @@ namespace ProductivityKeeperWeb.Controllers
             new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
 
-            // JWT-token
+
             var jwt = new JwtSecurityToken(
                     issuer: Models.AuthOptions.ISSUER,
                     audience: Models.AuthOptions.AUDIENCE,
@@ -126,9 +125,7 @@ namespace ProductivityKeeperWeb.Controllers
                     signingCredentials: new SigningCredentials(Models.AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            return Ok(new { accessToken = encodedJwt, lifeTime = AuthOptions.LIFETIME });
-
-
+            return Ok(new { accessToken = encodedJwt, lifeTime = Models.AuthOptions.LIFETIME });
         }
 
         private async Task<ClaimsIdentity> GetIdentity(string email, string password)
