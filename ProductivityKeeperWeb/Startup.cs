@@ -72,7 +72,7 @@ namespace ProductivityKeeperWeb
                 .AddCacheTagHelper()
                 .AddDataAnnotations(); ;
 
-            services.Configure<KestrelServerOptions>(options =>
+            services.Configure<IISServerOptions>(options =>
             {
                 options.AllowSynchronousIO = true;
             });

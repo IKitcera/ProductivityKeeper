@@ -64,7 +64,7 @@ namespace ProductivityKeeperWeb.Services
 
                 statistic.PerDayStatistic = CountDonePerDayStatistic(AllTasks);
             }
-            statistic.PerDayStatistic.AddRange(UpdateDonePerDayStatisticWithTasksFromArchive(unit.TaskArchive.ToList()));
+            UpdateDonePerDayStatisticWithTasksFromArchive(statistic.PerDayStatistic, unit.TaskArchive.ToList());
             UnionWithArchivedTasks(statistic, unit);
             statistic.PerDayStatistic = statistic.PerDayStatistic.OrderBy(x => x.Date).ToList();
         
@@ -96,7 +96,7 @@ namespace ProductivityKeeperWeb.Services
             return perDayStatistic;
         }
 
-        private IEnumerable<DonePerDay> UpdateDonePerDayStatisticWithTasksFromArchive(List<ArchivedTask> archivedTasks)
+        private void UpdateDonePerDayStatisticWithTasksFromArchive(List<DonePerDay> perDayStat, List<ArchivedTask> archivedTasks)
         {
             List<DonePerDay> perDayStatistic = new List<DonePerDay>();
 
@@ -110,7 +110,26 @@ namespace ProductivityKeeperWeb.Services
                 perDayStatistic.Add(new DonePerDay { Date = date.Value, CountOfDone = doneThatDay });
             }
 
-            return perDayStatistic;
+            // union
+
+            if (!perDayStat.Any())
+            {
+                perDayStat = perDayStatistic;
+                return;
+            }
+
+            foreach (var archivedSts in perDayStatistic)
+            {
+                var existingMatch = perDayStat.FirstOrDefault(s => s.Date == archivedSts.Date);
+                if (existingMatch != null)
+                {
+                    existingMatch.CountOfDone = (archivedSts.CountOfDone + existingMatch.CountOfDone); //total
+                }
+                else
+                {
+                    perDayStat.Add(archivedSts);
+                }
+            }
         }
 
         private void UnionWithArchivedTasks(UserStatistic statistic, Unit unit)
