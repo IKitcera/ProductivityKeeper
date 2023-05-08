@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ProductivityKeeperWeb.BussinessLogicLayer.Utils;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Models;
 using ProductivityKeeperWeb.Models.TaskRelated;
+using ProductivityKeeperWeb.Repositories.Interfaces;
 using ProductivityKeeperWeb.Services;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,11 +20,9 @@ namespace ProductivityKeeperWeb.Controllers
     public class AccountController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        private readonly ITaskPageHelper _helper;
-        public AccountController(ApplicationContext context, ITaskPageHelper helper)
+        public AccountController(ApplicationContext context)
         {
             _context = context;
-            _helper = helper;
         }
 
         [HttpPost("/token")]
@@ -33,9 +33,6 @@ namespace ProductivityKeeperWeb.Controllers
             {
                 return BadRequest(new { message = "Invalid username or password." });
             }
-
-
-            _helper.User = identity;
 
             var now = DateTime.UtcNow;
             // создаем JWT-токен
@@ -58,7 +55,7 @@ namespace ProductivityKeeperWeb.Controllers
                 return BadRequest(new { message = "User with this email already exists" });
 
             var unit = new Unit { UserId = user.Email };
-            unit = _helper.FillUnitForNewcommer(unit);
+            unit = TaskRelatedInitializar.FillUnitForNewcommer(unit);
             await _context.Units.AddAsync(unit);
             await _context.SaveChangesAsync();
 

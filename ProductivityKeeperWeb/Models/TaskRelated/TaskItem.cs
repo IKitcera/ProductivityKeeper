@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 namespace ProductivityKeeperWeb.Models.TaskRelated
 {
-    [Owned]
     public class TaskItem
     {
         public int Id { get; set; }

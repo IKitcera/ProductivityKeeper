@@ -2,16 +2,19 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace ProductivityKeeperWeb.Models.TaskRelated
 {
-    [Owned]
     public class Subcategory
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public string ColorHex { get; set; }
+        [ForeignKey("CategoryId")]
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
 
         public List<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProductivityKeeperWeb.Models;
+using ProductivityKeeperWeb.Repositories.Interfaces;
 using ProductivityKeeperWeb.Services;
 using System.Threading.Tasks;
 
@@ -13,18 +14,15 @@ namespace ProductivityKeeperWeb.Controllers
     public class AnalyticsController : ControllerBase
     {
         private readonly IAnalytics _analytic;
-        private readonly ITaskPageHelper _helper;
-        public AnalyticsController(IAnalytics _analytic, ITaskPageHelper _helper)
+        public AnalyticsController(IAnalytics analytic)
         {
-            this._helper = _helper;
-            this._analytic = _analytic;
+            _analytic = analytic;
         }
 
         [HttpGet]
-        public async Task<ActionResult<UserStatistic>> GetStatistic()
+        public async Task<ActionResult<UserStatistic>> GetStatistic(int unitId)
         {
-            var unit = await _helper.GetUnit();
-            return await _analytic.GetStatistic(unit);
+            return await _analytic.GetStatistic(unitId);
         }
     }
 }

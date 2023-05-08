@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Data;
+using ProductivityKeeperWeb.Models;
 using ProductivityKeeperWeb.Models.TaskRelated;
 using ProductivityKeeperWeb.Repositories.Interfaces;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb.Repositories
@@ -18,14 +23,24 @@ namespace ProductivityKeeperWeb.Repositories
             _context = context;
         }
 
-        public Task<Unit> GetUnit(int unitId)
+        public async Task<Unit> GetUnit(string userName)
         {
-            return _context.Units.AsNoTracking()
+            return await _context.Units.AsNoTracking()
                 .Include(u => u.Categories)
                     .ThenInclude(c => c.Subcategories)
                         .ThenInclude(s => s.Tasks)
-                .Where(u => u.Id == unitId)
-                .FirstOrDefaultAsync();
+                .Where(unit => unit.UserId == userName)
+                .SingleOrDefaultAsync();
+        }
+
+        public async Task<Unit> GetUnit(int unitID)
+        {
+            return await _context.Units.AsNoTracking()
+                .Include(u => u.Categories)
+                    .ThenInclude(c => c.Subcategories)
+                        .ThenInclude(s => s.Tasks)
+                .Where(unit => unit.Id == unitID)
+                .SingleOrDefaultAsync();
         }
 
         public Task<Unit> GetUnitBrief(int unitId)
@@ -74,5 +89,27 @@ namespace ProductivityKeeperWeb.Repositories
                 .Where(t => t.Id == taskId)
                 .FirstOrDefaultAsync();
         }
+
+        public Task<UserStatistic> GetStatistic(int unitId)
+        {
+            return _context.Statistics.AsNoTracking()
+                .Where(s => s.UnitId == unitId)
+                .FirstOrDefaultAsync();
+        }
+
+        //public async Task<IEnumerable<TaskItem>> GetTasks()
+        //{
+        //    return await _context.Tasks.AsNoTracking()
+        //        .Include(t => t.Subcategories)
+        //        .ToListAsync();
+        //}
+
+        //public async Task<IEnumerable<TaskItem>> GetConnectedTasks()
+        //{
+        //    return await _context.Tasks.AsNoTracking()
+        //        .Include(t => t.Subcategories)
+        //        .Where(t => t.Subcategories.Count > 1)
+        //        .ToListAsync();
+        //}
     }
 }

@@ -1,19 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace ProductivityKeeperWeb.Models.TaskRelated
 {
-    [Owned]
     public class Category
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public string ColorHex { get; set; }
         public bool IsVisible { get; set; }
+        public int UnitId { get; set; }
 
         public List<Subcategory> Subcategories { get; set; } = new List<Subcategory>();
 

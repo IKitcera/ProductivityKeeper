@@ -14,6 +14,7 @@ namespace ProductivityKeeperWeb.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Subcategory> Subcategories { get; set; }
         public DbSet<TaskItem> Tasks { get; set; }
+        public DbSet<UserStatistic> Statistics { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
@@ -36,8 +37,9 @@ namespace ProductivityKeeperWeb.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Subcategory>()
-                .HasMany(e => e.Tasks)
-                .WithMany(e => e.Subcategories);
+              .HasMany(s => s.Tasks)
+              .WithMany(t => t.Subcategories)
+              .UsingEntity(j => j.ToTable("SubcategoryTask"));
 
             base.OnModelCreating(modelBuilder);
         }

@@ -1,10 +1,12 @@
 ﻿using ProductivityKeeperWeb.Models;
 using ProductivityKeeperWeb.Models.TaskRelated;
+using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb.Services
 {
     public interface IAnalytics
     {
-        System.Threading.Tasks.Task<UserStatistic> GetStatistic(Unit unit);
+        Task<UserStatistic> GetStatistic(int unitId);
+        Task<UserStatistic> CountStatistic(int unitId);
     }
 }

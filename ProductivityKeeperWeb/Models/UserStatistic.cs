@@ -2,6 +2,7 @@
 using ProductivityKeeperWeb.Models.TaskRelated;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 
@@ -17,6 +18,9 @@ namespace ProductivityKeeperWeb.Models
         public int CountOfDoneToday { get; set; }
         public int CountOfDoneTotal { get; set; }
         public int CountOfExpiredTotal { get; set; }
+
+        [ForeignKey(nameof(UnitId))]
+        public int UnitId { get; set; }
         
         // Won't be writtent to db
         public int TasksOnToday;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProductivityKeeperWeb.Models
 {
@@ -11,5 +12,8 @@ namespace ProductivityKeeperWeb.Models
         public long Ticked { get; set; }
         public long Goal { get; set; }
         public int Format { get; set; }
+
+        [ForeignKey(nameof(UnitId))]
+        public int UnitId { get; set; }
     }
 }

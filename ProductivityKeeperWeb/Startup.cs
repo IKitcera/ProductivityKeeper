@@ -9,6 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Models;
+using ProductivityKeeperWeb.Repositories;
+using ProductivityKeeperWeb.Repositories.Interfaces;
 using ProductivityKeeperWeb.Services;
 
 namespace ProductivityKeeperWeb
@@ -105,7 +107,8 @@ namespace ProductivityKeeperWeb
             services.AddDbContext<ApplicationContext>();
             services.AddHttpContextAccessor();
             services.AddControllers();
-            services.AddScoped<ITaskPageHelper, TaskPageHelper>();
+            services.AddScoped<ITasksReadService, TasksReadService>();
+            services.AddScoped<ITasksWriteService, TasksWriteService>();
             services.AddScoped<IAnalytics, AnalyticService>();
           
         }
