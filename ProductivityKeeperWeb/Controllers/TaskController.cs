@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ProductivityKeeperWeb.Models.TaskRelated;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,18 +35,18 @@ namespace ProductivityKeeperWeb.Controllers
 
         // GET: api/Categorys/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TaskItem>> GetTask(int taskId)
+        public async Task<ActionResult<TaskItem>> GetTask(int id)
         {
-            TaskItem task = await _taskReadService.GetTask(taskId);
+            TaskItem task = await _taskReadService.GetTask(id);
             return task == null ? (ActionResult<TaskItem>)NotFound() : (ActionResult<TaskItem>)task;
         }
 
         // PUT: api/Categorys/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut]
-        public async Task<ActionResult<TaskItem>> PutTask(int taskId, TaskItem task)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<TaskItem>> PutTask(int id, TaskItem task)
         {
-            if (task.Id != taskId)
+            if (task.Id != id)
             {
                 return BadRequest();
             }
@@ -70,8 +70,8 @@ namespace ProductivityKeeperWeb.Controllers
         }
 
         // DELETE: api/Categorys/5
-        [HttpDelete]
-        public async Task<IActionResult> DeleteTask(int categoryId, int subcategoryId, int taskId)
+        [HttpDelete("{taskId}")]
+        public async Task<IActionResult> DeleteTask(int taskId)
         {
             await _taskWriteService.DeleteTaskItem(taskId);
             return Ok();

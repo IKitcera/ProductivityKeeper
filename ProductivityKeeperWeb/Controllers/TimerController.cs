@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Data;
-using ProductivityKeeperWeb.Models;
-using ProductivityKeeperWeb.Models.TaskRelated;
+using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Repositories.Interfaces;
-using ProductivityKeeperWeb.Services;
 
 namespace ProductivityKeeperWeb.Controllers
 {

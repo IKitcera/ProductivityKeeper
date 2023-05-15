@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace ProductivityKeeperWeb.Models.TaskRelated
+namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
 {
     public class TaskItem
     {
@@ -20,11 +20,10 @@ namespace ProductivityKeeperWeb.Models.TaskRelated
         public int? GoalRepeatCount { get; set; }
 
         public double? HabbitIntervalInHours { get; set; }
-        //-----Connected tasks
-        public int? RelationId { get; set; }
-
-        public List<Subcategory> Subcategories { get; set; } = new List<Subcategory>();
-
+        
+        public List<Subcategory> Subcategories { get; set; } = new ();
+        public ICollection<Tag> Tags { get => Subcategories
+                .Select(s => Tag.GetTag(Id, s)).ToList(); } 
 
         [JsonIgnore]
         public DateTime DateOfCreation { get; set; }

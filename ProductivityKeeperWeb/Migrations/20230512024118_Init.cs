@@ -1,12 +1,34 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
+#nullable disable
+
 namespace ProductivityKeeperWeb.Migrations
 {
-    public partial class Initial : Migration
+    /// <inheritdoc />
+    public partial class Init : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Statistics",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PercentOfDoneToday = table.Column<float>(type: "real", nullable: false),
+                    PercentOfDoneTotal = table.Column<float>(type: "real", nullable: false),
+                    CountOfDoneToday = table.Column<int>(type: "int", nullable: false),
+                    CountOfDoneTotal = table.Column<int>(type: "int", nullable: false),
+                    CountOfExpiredTotal = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Statistics", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Tasks",
                 columns: table => new
@@ -21,7 +43,6 @@ namespace ProductivityKeeperWeb.Migrations
                     TimesToRepeat = table.Column<int>(type: "int", nullable: true),
                     GoalRepeatCount = table.Column<int>(type: "int", nullable: true),
                     HabbitIntervalInHours = table.Column<double>(type: "float", nullable: true),
-                    RelationId = table.Column<int>(type: "int", nullable: true),
                     DateOfCreation = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -62,6 +83,27 @@ namespace ProductivityKeeperWeb.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserSettings", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DonePerDay",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserStatisticId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CountOfDone = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DonePerDay", x => new { x.UserStatisticId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_DonePerDay_Statistics_UserStatisticId",
+                        column: x => x.UserStatisticId,
+                        principalTable: "Statistics",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -111,29 +153,6 @@ namespace ProductivityKeeperWeb.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Statistics",
-                columns: table => new
-                {
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    PercentOfDoneToday = table.Column<float>(type: "real", nullable: false),
-                    PercentOfDoneTotal = table.Column<float>(type: "real", nullable: false),
-                    CountOfDoneToday = table.Column<int>(type: "int", nullable: false),
-                    CountOfDoneTotal = table.Column<int>(type: "int", nullable: false),
-                    CountOfExpiredTotal = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Statistics", x => x.UnitId);
-                    table.ForeignKey(
-                        name: "FK_Statistics_Units_UnitId",
-                        column: x => x.UnitId,
-                        principalTable: "Units",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -151,8 +170,7 @@ namespace ProductivityKeeperWeb.Migrations
                         name: "FK_Users_UserSettings_UserSettingsId",
                         column: x => x.UserSettingsId,
                         principalTable: "UserSettings",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -179,45 +197,25 @@ namespace ProductivityKeeperWeb.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DonePerDay",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserStatisticUnitId = table.Column<int>(type: "int", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CountOfDone = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DonePerDay", x => new { x.UserStatisticUnitId, x.Id });
-                    table.ForeignKey(
-                        name: "FK_DonePerDay_Statistics_UserStatisticUnitId",
-                        column: x => x.UserStatisticUnitId,
-                        principalTable: "Statistics",
-                        principalColumn: "UnitId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "SubcategoryTask",
                 columns: table => new
                 {
-                    SubcategoriesId = table.Column<int>(type: "int", nullable: false),
-                    TasksId = table.Column<int>(type: "int", nullable: false)
+                    TaskItemId = table.Column<int>(type: "int", nullable: false),
+                    SubcategoryId = table.Column<int>(type: "int", nullable: false),
+                    SubcaategoryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SubcategoryTask", x => new { x.SubcategoriesId, x.TasksId });
+                    table.PrimaryKey("PK_SubcategoryTask", x => new { x.SubcategoryId, x.TaskItemId });
                     table.ForeignKey(
-                        name: "FK_SubcategoryTask_Subcategories_SubcategoriesId",
-                        column: x => x.SubcategoriesId,
+                        name: "FK_SubcategoryTask_Subcategories_SubcategoryId",
+                        column: x => x.SubcategoryId,
                         principalTable: "Subcategories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_SubcategoryTask_Tasks_TasksId",
-                        column: x => x.TasksId,
+                        name: "FK_SubcategoryTask_Tasks_TaskItemId",
+                        column: x => x.TaskItemId,
                         principalTable: "Tasks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -234,9 +232,9 @@ namespace ProductivityKeeperWeb.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SubcategoryTask_TasksId",
+                name: "IX_SubcategoryTask_TaskItemId",
                 table: "SubcategoryTask",
-                column: "TasksId");
+                column: "TaskItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_UserSettingsId",
@@ -244,6 +242,7 @@ namespace ProductivityKeeperWeb.Migrations
                 column: "UserSettingsId");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

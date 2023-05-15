@@ -1,5 +1,5 @@
-﻿using ProductivityKeeperWeb.Models;
-using ProductivityKeeperWeb.Models.TaskRelated;
+﻿using ProductivityKeeperWeb.Domain.Models;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;

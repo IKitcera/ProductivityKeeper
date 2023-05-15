@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ProductivityKeeperWeb.BussinessLogicLayer.Utils;
+using ProductivityKeeperWeb.Domain.Models;
+using ProductivityKeeperWeb.Domain.Utils;
 using ProductivityKeeperWeb.Data;
-using ProductivityKeeperWeb.Models;
-using ProductivityKeeperWeb.Models.TaskRelated;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Repositories.Interfaces;
 using ProductivityKeeperWeb.Services;
 using System;
@@ -37,15 +37,15 @@ namespace ProductivityKeeperWeb.Controllers
             var now = DateTime.UtcNow;
             // создаем JWT-токен
             var jwt = new JwtSecurityToken(
-                    issuer: Models.AuthOptions.ISSUER,
-                    audience: Models.AuthOptions.AUDIENCE,
+                    issuer: AuthOptions.ISSUER,
+                    audience: AuthOptions.AUDIENCE,
                     notBefore: now,
                     claims: identity.Claims,
                     expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
-                    signingCredentials: new SigningCredentials(Models.AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            return Ok(new { accessToken = encodedJwt, lifeTime = Models.AuthOptions.LIFETIME });
+            return Ok(new { accessToken = encodedJwt, lifeTime = AuthOptions.LIFETIME });
         }
 
         [HttpPost("/registration")]
@@ -65,7 +65,7 @@ namespace ProductivityKeeperWeb.Controllers
             {
                 Email = user.Email,
                 HashPassword = user.HashPassword,
-                Role = Models.User.Roles.User,
+                Role = Domain.Models.User.Roles.User,
                 RegistrationDate = DateTime.UtcNow,
                 UnitId = theUnit.Id
             };
@@ -114,15 +114,15 @@ namespace ProductivityKeeperWeb.Controllers
 
 
             var jwt = new JwtSecurityToken(
-                    issuer: Models.AuthOptions.ISSUER,
-                    audience: Models.AuthOptions.AUDIENCE,
+                    issuer: AuthOptions.ISSUER,
+                    audience: AuthOptions.AUDIENCE,
                     notBefore: now,
                     claims: claims,
                     expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
-                    signingCredentials: new SigningCredentials(Models.AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            return Ok(new { accessToken = encodedJwt, lifeTime = Models.AuthOptions.LIFETIME });
+            return Ok(new { accessToken = encodedJwt, lifeTime = AuthOptions.LIFETIME });
         }
 
         private async Task<ClaimsIdentity> GetIdentity(string email, string password)

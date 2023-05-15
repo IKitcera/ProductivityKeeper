@@ -7,26 +7,31 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductivityKeeperWeb.Data;
 
+#nullable disable
+
 namespace ProductivityKeeperWeb.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20230508035431_Initial")]
-    partial class Initial
+    [Migration("20230512024118_Init")]
+    partial class Init
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.12")
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Category", b =>
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ColorHex")
                         .HasColumnType("nvarchar(max)");
@@ -53,12 +58,13 @@ namespace ProductivityKeeperWeb.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Subcategory", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Subcategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
@@ -82,12 +88,31 @@ namespace ProductivityKeeperWeb.Migrations
                     b.ToTable("Subcategories");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.TaskItem", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.SubcategoryTask", b =>
+                {
+                    b.Property<int>("SubcategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TaskItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubcaategoryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SubcategoryId", "TaskItemId");
+
+                    b.HasIndex("TaskItemId");
+
+                    b.ToTable("SubcategoryTask", (string)null);
+                });
+
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.TaskItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DateOfCreation")
                         .HasColumnType("datetime2");
@@ -110,9 +135,6 @@ namespace ProductivityKeeperWeb.Migrations
                     b.Property<bool>("IsRepeatable")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("RelationId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
 
@@ -124,12 +146,13 @@ namespace ProductivityKeeperWeb.Migrations
                     b.ToTable("Tasks");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Unit", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Unit", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("StatisticId")
                         .HasColumnType("int");
@@ -142,7 +165,7 @@ namespace ProductivityKeeperWeb.Migrations
                     b.ToTable("Units");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.User", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.User", b =>
                 {
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(450)");
@@ -169,12 +192,13 @@ namespace ProductivityKeeperWeb.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.UserSettings", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.UserSettings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AppTheme")
                         .HasColumnType("int");
@@ -193,33 +217,49 @@ namespace ProductivityKeeperWeb.Migrations
                     b.ToTable("UserSettings");
                 });
 
-            modelBuilder.Entity("SubcategoryTaskItem", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.UserStatistic", b =>
                 {
-                    b.Property<int>("SubcategoriesId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("TasksId")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CountOfDoneToday")
                         .HasColumnType("int");
 
-                    b.HasKey("SubcategoriesId", "TasksId");
+                    b.Property<int>("CountOfDoneTotal")
+                        .HasColumnType("int");
 
-                    b.HasIndex("TasksId");
+                    b.Property<int>("CountOfExpiredTotal")
+                        .HasColumnType("int");
 
-                    b.ToTable("SubcategoryTask");
+                    b.Property<float>("PercentOfDoneToday")
+                        .HasColumnType("real");
+
+                    b.Property<float>("PercentOfDoneTotal")
+                        .HasColumnType("real");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Statistics");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Category", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Category", b =>
                 {
-                    b.HasOne("ProductivityKeeperWeb.Models.TaskRelated.Unit", null)
+                    b.HasOne("ProductivityKeeperWeb.Domain.Models.TaskRelated.Unit", null)
                         .WithMany("Categories")
                         .HasForeignKey("UnitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Subcategory", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Subcategory", b =>
                 {
-                    b.HasOne("ProductivityKeeperWeb.Models.TaskRelated.Category", "Category")
+                    b.HasOne("ProductivityKeeperWeb.Domain.Models.TaskRelated.Category", "Category")
                         .WithMany("Subcategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -228,17 +268,37 @@ namespace ProductivityKeeperWeb.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Unit", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.SubcategoryTask", b =>
                 {
-                    b.OwnsMany("ProductivityKeeperWeb.Models.TaskRelated.ArchivedTask", "TaskArchive", b1 =>
+                    b.HasOne("ProductivityKeeperWeb.Domain.Models.TaskRelated.Subcategory", "Subcategory")
+                        .WithMany()
+                        .HasForeignKey("SubcategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProductivityKeeperWeb.Domain.Models.TaskRelated.TaskItem", "TaskItem")
+                        .WithMany()
+                        .HasForeignKey("TaskItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Subcategory");
+
+                    b.Navigation("TaskItem");
+                });
+
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Unit", b =>
+                {
+                    b.OwnsMany("ProductivityKeeperWeb.Domain.Models.TaskRelated.ArchivedTask", "TaskArchive", b1 =>
                         {
                             b1.Property<int>("UnitId")
                                 .HasColumnType("int");
 
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
 
                             b1.Property<DateTime?>("Deadline")
                                 .HasColumnType("datetime2");
@@ -257,12 +317,10 @@ namespace ProductivityKeeperWeb.Migrations
                                 .HasForeignKey("UnitId");
                         });
 
-                    b.OwnsOne("ProductivityKeeperWeb.Models.Timer", "Timer", b1 =>
+                    b.OwnsOne("ProductivityKeeperWeb.Domain.Models.Timer", "Timer", b1 =>
                         {
                             b1.Property<int>("UnitId")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                                .HasColumnType("int");
 
                             b1.Property<int>("Format")
                                 .HasColumnType("int");
@@ -287,100 +345,56 @@ namespace ProductivityKeeperWeb.Migrations
                                 .HasForeignKey("UnitId");
                         });
 
-                    b.OwnsOne("ProductivityKeeperWeb.Models.UserStatistic", "Statistic", b1 =>
-                        {
-                            b1.Property<int>("UnitId")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("CountOfDoneToday")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("CountOfDoneTotal")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("CountOfExpiredTotal")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("Id")
-                                .HasColumnType("int");
-
-                            b1.Property<float>("PercentOfDoneToday")
-                                .HasColumnType("real");
-
-                            b1.Property<float>("PercentOfDoneTotal")
-                                .HasColumnType("real");
-
-                            b1.HasKey("UnitId");
-
-                            b1.ToTable("Statistics");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UnitId");
-
-                            b1.OwnsMany("ProductivityKeeperWeb.Models.DonePerDay", "PerDayStatistic", b2 =>
-                                {
-                                    b2.Property<int>("UserStatisticUnitId")
-                                        .HasColumnType("int");
-
-                                    b2.Property<int>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("int")
-                                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                                    b2.Property<int>("CountOfDone")
-                                        .HasColumnType("int");
-
-                                    b2.Property<DateTime>("Date")
-                                        .HasColumnType("datetime2");
-
-                                    b2.HasKey("UserStatisticUnitId", "Id");
-
-                                    b2.ToTable("DonePerDay");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("UserStatisticUnitId");
-                                });
-
-                            b1.Navigation("PerDayStatistic");
-                        });
-
-                    b.Navigation("Statistic");
-
                     b.Navigation("TaskArchive");
 
                     b.Navigation("Timer");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.User", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.User", b =>
                 {
-                    b.HasOne("ProductivityKeeperWeb.Models.UserSettings", "UserSettings")
+                    b.HasOne("ProductivityKeeperWeb.Domain.Models.UserSettings", "UserSettings")
                         .WithMany()
                         .HasForeignKey("UserSettingsId");
 
                     b.Navigation("UserSettings");
                 });
 
-            modelBuilder.Entity("SubcategoryTaskItem", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.UserStatistic", b =>
                 {
-                    b.HasOne("ProductivityKeeperWeb.Models.TaskRelated.Subcategory", null)
-                        .WithMany()
-                        .HasForeignKey("SubcategoriesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.OwnsMany("ProductivityKeeperWeb.Domain.Models.DonePerDay", "PerDayStatistic", b1 =>
+                        {
+                            b1.Property<int>("UserStatisticId")
+                                .HasColumnType("int");
 
-                    b.HasOne("ProductivityKeeperWeb.Models.TaskRelated.TaskItem", null)
-                        .WithMany()
-                        .HasForeignKey("TasksId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<int>("CountOfDone")
+                                .HasColumnType("int");
+
+                            b1.Property<DateTime>("Date")
+                                .HasColumnType("datetime2");
+
+                            b1.HasKey("UserStatisticId", "Id");
+
+                            b1.ToTable("DonePerDay");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserStatisticId");
+                        });
+
+                    b.Navigation("PerDayStatistic");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Category", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Category", b =>
                 {
                     b.Navigation("Subcategories");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Models.TaskRelated.Unit", b =>
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Unit", b =>
                 {
                     b.Navigation("Categories");
                 });

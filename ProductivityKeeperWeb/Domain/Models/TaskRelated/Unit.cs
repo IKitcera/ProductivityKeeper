@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace ProductivityKeeperWeb.Models.TaskRelated
+namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
 {
     public class Unit
     {
@@ -16,7 +16,7 @@ namespace ProductivityKeeperWeb.Models.TaskRelated
 
         [ForeignKey(nameof(StatisticId))]
         public int StatisticId { get; set; }
-        public UserStatistic Statistic { get; set; }
+        //  public UserStatistic Statistic { get; set; }
         public List<ArchivedTask> TaskArchive { get; set; } = new List<ArchivedTask>();
     }
 }

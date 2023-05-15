@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ProductivityKeeperWeb.Models
+namespace ProductivityKeeperWeb.Domain.Models
 {
     public class UserSettings
     {

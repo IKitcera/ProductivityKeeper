@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using ProductivityKeeperWeb.Domain.Models;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Data;
-using ProductivityKeeperWeb.Models;
-using ProductivityKeeperWeb.Models.TaskRelated;
 using ProductivityKeeperWeb.Repositories.Interfaces;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb.Repositories
@@ -25,12 +22,23 @@ namespace ProductivityKeeperWeb.Repositories
 
         public async Task<Unit> GetUnit(string userName)
         {
-            return await _context.Units.AsNoTracking()
+            var unit = await _context.Units.AsNoTracking()
                 .Include(u => u.Categories)
                     .ThenInclude(c => c.Subcategories)
                         .ThenInclude(s => s.Tasks)
                 .Where(unit => unit.UserId == userName)
                 .SingleOrDefaultAsync();
+
+            foreach (var category in unit.Categories)
+            {
+                foreach (var subcategory in category.Subcategories)
+                {
+                    subcategory.Tasks.Select(async task =>
+                        task.Subcategories = await GetSubcategoriesByTask(task.Id));
+                }
+            }
+
+            return unit;
         }
 
         public async Task<Unit> GetUnit(int unitID)
@@ -51,13 +59,20 @@ namespace ProductivityKeeperWeb.Repositories
         }
 
         // todo : remove?
-        public Task<Category> GetCategory(int categoryId)
+        public async Task<Category> GetCategory(int categoryId)
         {
-            return _context.Categories.AsNoTracking()
+            var category = await _context.Categories.AsNoTracking()
                 .Include(c => c.Subcategories)
                     .ThenInclude(s => s.Tasks)
                 .Where(c => c.Id == categoryId)
                 .FirstOrDefaultAsync();
+
+            foreach (var subcategory in category.Subcategories)
+            {
+                subcategory.Tasks.Select(async task =>
+                    task.Subcategories = await GetSubcategoriesByTask(task.Id));
+            }
+            return category;
         }
 
         public Task<Category> GetCategoryBrief(int categoryId)
@@ -88,6 +103,15 @@ namespace ProductivityKeeperWeb.Repositories
                 .Include(t => t.Subcategories)
                 .Where(t => t.Id == taskId)
                 .FirstOrDefaultAsync();
+        }
+
+        public Task<List<Subcategory>> GetSubcategoriesByTask(int taskId)
+        {
+            return _context.Tasks.AsNoTracking()
+                .Include(t => t.Subcategories)
+                .Where(t => t.Id == taskId)
+                .SelectMany(t => t.Subcategories)
+                .ToListAsync();
         }
 
         public Task<UserStatistic> GetStatistic(int unitId)

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ProductivityKeeperWeb.Models
+namespace ProductivityKeeperWeb.Domain.Models
 {
     public class AbstractUser
     {
@@ -8,6 +8,6 @@ namespace ProductivityKeeperWeb.Models
         [EmailAddress]
         public string Email { get; set; }
         public string HashPassword { get; set; }
-      //  public int UnitId { get; set; }
+        //  public int UnitId { get; set; }
     }
 }

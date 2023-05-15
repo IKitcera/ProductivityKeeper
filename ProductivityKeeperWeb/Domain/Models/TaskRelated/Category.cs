@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ProductivityKeeperWeb.Models.TaskRelated
+namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
 {
     public class Category
     {

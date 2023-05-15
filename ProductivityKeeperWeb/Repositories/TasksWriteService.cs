@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using ProductivityKeeperWeb.BussinessLogicLayer.Utils;
 using ProductivityKeeperWeb.Data;
-using ProductivityKeeperWeb.Models;
-using ProductivityKeeperWeb.Models.TaskRelated;
+using ProductivityKeeperWeb.Domain.Models;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
+using ProductivityKeeperWeb.Domain.Utils;
 using ProductivityKeeperWeb.Repositories.Interfaces;
 using System;
 using System.Linq;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace ProductivityKeeperWeb.Repositories
 {
     [Authorize]
-    public class TasksWriteService: ITasksWriteService
+    public class TasksWriteService : ITasksWriteService
     {
         private readonly ApplicationContext _context;
         private readonly ITasksReadService _tasksReadService;
@@ -29,7 +29,7 @@ namespace ProductivityKeeperWeb.Repositories
             category = TaskRelatedInitializar.FillCategory(category, categories);
             var ctg = await _context.Categories.AddAsync(category);
 
-            _context.Entry(ctg).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            _context.Entry(ctg.Entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
 
             await _context.SaveChangesAsync();
             return category;
@@ -66,7 +66,7 @@ namespace ProductivityKeeperWeb.Repositories
             subcategory = TaskRelatedInitializar.FillSubcategory(subcategory, allSubs);
             var item = await _context.Subcategories.AddAsync(subcategory);
 
-            _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            _context.Entry(item.Entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
 
             await _context.SaveChangesAsync();
             return subcategory;
@@ -94,9 +94,18 @@ namespace ProductivityKeeperWeb.Repositories
         public async Task<TaskItem> AddTaskItem(TaskItem task)
         {
             task = TaskRelatedInitializar.FillTask(task);
+
+
+            var subcategoryItem = await _context.Subcategories.FindAsync(task.Subcategories[0].Id);
+
+            if (subcategoryItem == null)
+                throw new InvalidOperationException("Cannot find category id!");
+
+            task.Subcategories[0] = subcategoryItem;
             var item = await _context.Tasks.AddAsync(task);
 
-            _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            _context.Entry(subcategoryItem).State = EntityState.Modified;
+            _context.Entry(item.Entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
 
             await _context.SaveChangesAsync();
             return task;
@@ -105,11 +114,12 @@ namespace ProductivityKeeperWeb.Repositories
         public async Task<TaskItem> UpdateTaskItem(TaskItem task)
         {
             var item = await _context.Tasks.FindAsync(task.Id);
-
             item.Text = task.Text;
             item.Deadline = task.Deadline?.ToLocalTime();
             item.DoneDate = task.IsChecked ? DateTime.Now : null;
             item.IsChecked = task.IsChecked;
+
+            item.Subcategories = task.Subcategories;
 
             item.IsRepeatable = task.IsRepeatable;
 
@@ -128,9 +138,20 @@ namespace ProductivityKeeperWeb.Repositories
                 item.HabbitIntervalInHours = null;
             }
 
-            item.RelationId = task.RelationId;
+            var subcategoryTasksToSkip = await _context.SubcategoriesTasks
+                .Where(st => st.TaskItemId == task.Id)
+                .ToListAsync();
+            subcategoryTasksToSkip = subcategoryTasksToSkip
+                .Where(sts => task.Subcategories
+                    .Any(s => s.Id == sts.SubcategoryId))
+                .ToList();
 
-            _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            foreach (var sts in subcategoryTasksToSkip)
+            {
+                _context.SubcategoriesTasks.Entry(sts).State = EntityState.Unchanged;
+            }
+
+            _context.Entry(item).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
             return task;

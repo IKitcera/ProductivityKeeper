@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ProductivityKeeperWeb.Models.TaskRelated;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -42,9 +42,9 @@ namespace ProductivityKeeperWeb.Controllers
 
         // GET: api/Category/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Category>> GetCategory(int categoryId)
+        public async Task<ActionResult<Category>> GetCategory(int id)
         {
-            Category category = await _taskReadService.GetCategory(categoryId);
+            Category category = await _taskReadService.GetCategory(id);
 
             return category == null ? (ActionResult<Category>)NotFound() : (ActionResult<Category>)category;
         }
@@ -52,9 +52,9 @@ namespace ProductivityKeeperWeb.Controllers
         // PUT: api/Category/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<ActionResult<Category>> PutCategory(int categoryId, Category category)
+        public async Task<ActionResult<Category>> PutCategory(int id, Category category)
         {
-            if (categoryId != category.Id)
+            if (id != category.Id)
             {
                 return BadRequest();
             }

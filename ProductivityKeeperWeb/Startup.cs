@@ -1,14 +1,15 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Data;
-using ProductivityKeeperWeb.Models;
 using ProductivityKeeperWeb.Repositories;
 using ProductivityKeeperWeb.Repositories.Interfaces;
 using ProductivityKeeperWeb.Services;
@@ -36,9 +37,9 @@ namespace ProductivityKeeperWeb
                     {
                         options.TokenValidationParameters = new TokenValidationParameters
                         {
-                           // ValidateIssuer = true,
-                          //  ValidateAudience = true,
-                         //   ValidateLifetime = true,
+                            // ValidateIssuer = true,
+                            //  ValidateAudience = true,
+                            //   ValidateLifetime = true,
                             ValidateIssuerSigningKey = true,
 
                             ValidIssuer = AuthOptions.ISSUER,
@@ -52,7 +53,7 @@ namespace ProductivityKeeperWeb
                 {
                     builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
                 });
-               
+
                 options.AddPolicy("EnableCORS", builder =>
                 {
                     builder.AllowAnyOrigin()
@@ -62,6 +63,10 @@ namespace ProductivityKeeperWeb
             });
 
             services.AddMvcCore()
+              .AddNewtonsoftJson(opt =>
+              {
+                  opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+              })
               .AddMvcOptions(options =>
               {
                   options.SuppressOutputFormatterBuffering = true;
@@ -72,7 +77,7 @@ namespace ProductivityKeeperWeb
                 .AddViews()
                 .AddRazorViewEngine()
                 .AddCacheTagHelper()
-                .AddDataAnnotations(); ;
+                .AddDataAnnotations();
 
             services.Configure<IISServerOptions>(options =>
             {
@@ -110,7 +115,7 @@ namespace ProductivityKeeperWeb
             services.AddScoped<ITasksReadService, TasksReadService>();
             services.AddScoped<ITasksWriteService, TasksWriteService>();
             services.AddScoped<IAnalytics, AnalyticService>();
-          
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

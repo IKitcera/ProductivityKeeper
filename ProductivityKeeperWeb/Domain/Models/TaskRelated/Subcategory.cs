@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace ProductivityKeeperWeb.Models.TaskRelated
+namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
 {
     public class Subcategory
     {
@@ -14,7 +14,7 @@ namespace ProductivityKeeperWeb.Models.TaskRelated
         public string ColorHex { get; set; }
         [ForeignKey("CategoryId")]
         public int CategoryId { get; set; }
-        public Category Category { get; set; }
+        public virtual Category Category { get; set; }
 
         public List<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 
@@ -24,7 +24,7 @@ namespace ProductivityKeeperWeb.Models.TaskRelated
         public int Position { get; set; }
         [JsonIgnore]
         public DateTime DateOfCreation { get; set; }
-      
+
 
         public Subcategory()
         {

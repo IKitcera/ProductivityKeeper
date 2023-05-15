@@ -1,5 +1,4 @@
-﻿using ProductivityKeeperWeb.Models;
-using ProductivityKeeperWeb.Models.TaskRelated;
+﻿using ProductivityKeeperWeb.Domain.Models;
 using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb.Services

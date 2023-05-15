@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 
-namespace ProductivityKeeperWeb.Models
+namespace ProductivityKeeperWeb.Domain.Models
 {
-  [Owned]
+    [Owned]
     public class DonePerDay
     {
         public int Id { get; set; }

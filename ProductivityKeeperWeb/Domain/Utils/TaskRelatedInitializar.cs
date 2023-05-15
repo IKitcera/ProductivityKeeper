@@ -1,8 +1,8 @@
-﻿using ProductivityKeeperWeb.Models.TaskRelated;
+﻿using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ProductivityKeeperWeb.BussinessLogicLayer.Utils
+namespace ProductivityKeeperWeb.Domain.Utils
 {
     public static class TaskRelatedInitializar
     {

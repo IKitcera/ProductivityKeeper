@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using ProductivityKeeperWeb.Models;
-using ProductivityKeeperWeb.Models.TaskRelated;
+using ProductivityKeeperWeb.Domain.Models;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using System;
 using System.IO;
 
@@ -14,6 +14,7 @@ namespace ProductivityKeeperWeb.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Subcategory> Subcategories { get; set; }
         public DbSet<TaskItem> Tasks { get; set; }
+        public DbSet<SubcategoryTask> SubcategoriesTasks { get; set; }
         public DbSet<UserStatistic> Statistics { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
@@ -36,10 +37,16 @@ namespace ProductivityKeeperWeb.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Ignore<Tag>();
+
+            modelBuilder.Entity<Category>();
+
+            modelBuilder.Entity<TaskItem>().Ignore(e => e.Tags);
+
             modelBuilder.Entity<Subcategory>()
               .HasMany(s => s.Tasks)
               .WithMany(t => t.Subcategories)
-              .UsingEntity(j => j.ToTable("SubcategoryTask"));
+              .UsingEntity<SubcategoryTask>(j => j.ToTable("SubcategoryTask"));
 
             base.OnModelCreating(modelBuilder);
         }

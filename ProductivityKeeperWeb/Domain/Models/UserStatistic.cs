@@ -1,12 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ProductivityKeeperWeb.Models.TaskRelated;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
 
-namespace ProductivityKeeperWeb.Models
+namespace ProductivityKeeperWeb.Domain.Models
 {
     [Owned]
     public class UserStatistic
@@ -21,7 +17,7 @@ namespace ProductivityKeeperWeb.Models
 
         [ForeignKey(nameof(UnitId))]
         public int UnitId { get; set; }
-        
+
         // Won't be writtent to db
         public int TasksOnToday;
         public int AllTasksCount;

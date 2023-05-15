@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace ProductivityKeeperWeb.Models
+namespace ProductivityKeeperWeb.Domain.Models
 {
-    public class User: AbstractUser
+    public class User : AbstractUser
     {
         public Roles Role { get; set; }
         public int UnitId { get; set; }

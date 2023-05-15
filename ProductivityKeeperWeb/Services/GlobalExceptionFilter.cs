@@ -12,7 +12,7 @@ namespace ProductivityKeeperWeb.Services
         {
             context.HttpContext.Response.StatusCode = 500;
 
-            var error = context.Exception.Message + "\n" + context.Exception.StackTrace;
+            var error = context.Exception.InnerException?.Message ?? context.Exception.Message + "\n\n" + context.Exception.StackTrace;
             context.Result = new JsonResult(new { message = error });
         }
     }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 
-namespace ProductivityKeeperWeb.Models.TaskRelated
+namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
 {
     // todo: refactor
     [Owned]
@@ -12,7 +12,7 @@ namespace ProductivityKeeperWeb.Models.TaskRelated
         public DateTime? DoneDate { get; set; }
         public DateTime? Deadline { get; set; }
     }
-    
+
     public enum ArchievedTaskStatus
     {
         Undone,
