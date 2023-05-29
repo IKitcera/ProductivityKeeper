@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
-using ProductivityKeeperWeb.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

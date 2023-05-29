@@ -41,8 +41,6 @@ namespace ProductivityKeeperWeb.Data
 
             modelBuilder.Entity<Category>();
 
-            modelBuilder.Entity<TaskItem>().Ignore(e => e.Tags);
-
             modelBuilder.Entity<Subcategory>()
               .HasMany(s => s.Tasks)
               .WithMany(t => t.Subcategories)

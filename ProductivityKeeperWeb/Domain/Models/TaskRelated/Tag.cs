@@ -1,4 +1,6 @@
-﻿namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
+﻿using ProductivityKeeperWeb.Domain.Utils;
+
+namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
 {
     public class Tag
     {
@@ -7,6 +9,7 @@
         public int TaskId { get; set; }
         public string Text { get; set; }
         public string ColorHex { get; set; }
+        public string TextColorHex { get; set; }
 
         public static Tag GetTag(int taskId, Subcategory s) =>
             new Tag
@@ -15,7 +18,8 @@
                 SubcategoryId = s.Id,
                 CategoryId = s.CategoryId,
                 Text = s.Name,
-                ColorHex = s.Category?.ColorHex
+                ColorHex = s.Category?.ColorHex,
+                TextColorHex = ColorUtil.GenerateTextColorHex(s.Category?.ColorHex)
             };
     }
 }

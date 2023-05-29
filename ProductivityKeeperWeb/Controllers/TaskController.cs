@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
-using ProductivityKeeperWeb.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,13 +16,16 @@ namespace ProductivityKeeperWeb.Controllers
     {
         private readonly ITasksReadService _taskReadService;
         private readonly ITasksWriteService _taskWriteService;
+        private readonly IAuthService _authService;
 
         public TaskController(
             ITasksReadService taskReadService,
-            ITasksWriteService taskWriteService)
+            ITasksWriteService taskWriteService,
+            IAuthService authService)
         {
             _taskReadService = taskReadService;
             _taskWriteService = taskWriteService;
+            _authService = authService;
         }
 
 
@@ -39,6 +42,14 @@ namespace ProductivityKeeperWeb.Controllers
         {
             TaskItem task = await _taskReadService.GetTask(id);
             return task == null ? (ActionResult<TaskItem>)NotFound() : (ActionResult<TaskItem>)task;
+        }
+
+        [HttpGet("tags")]
+        public async Task<ActionResult<List<Tag>>> GetTags()
+        {
+            var unitId = _authService.GetUnitId();
+            var res = await _taskReadService.GetTags(unitId);
+            return res;
         }
 
         // PUT: api/Categorys/5

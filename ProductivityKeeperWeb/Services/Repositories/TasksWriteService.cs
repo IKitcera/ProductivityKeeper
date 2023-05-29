@@ -4,12 +4,12 @@ using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Domain.Utils;
-using ProductivityKeeperWeb.Repositories.Interfaces;
+using ProductivityKeeperWeb.Domain.Interfaces;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ProductivityKeeperWeb.Repositories
+namespace ProductivityKeeperWeb.Services.Repositories
 {
     [Authorize]
     public class TasksWriteService : ITasksWriteService
@@ -29,7 +29,7 @@ namespace ProductivityKeeperWeb.Repositories
             category = TaskRelatedInitializar.FillCategory(category, categories);
             var ctg = await _context.Categories.AddAsync(category);
 
-            _context.Entry(ctg.Entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            _context.Entry(ctg.Entity).State = EntityState.Added;
 
             await _context.SaveChangesAsync();
             return category;
@@ -42,7 +42,7 @@ namespace ProductivityKeeperWeb.Repositories
             ctg.ColorHex = category.ColorHex;
             ctg.Subcategories = category.Subcategories;
 
-            _context.Entry(ctg).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _context.Entry(ctg).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
             return category;
@@ -52,7 +52,7 @@ namespace ProductivityKeeperWeb.Repositories
         {
             var item = await _context.Categories.FindAsync(categoryId);
 
-            _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
+            _context.Entry(item).State = EntityState.Deleted;
 
             await _context.SaveChangesAsync();
         }
@@ -66,7 +66,7 @@ namespace ProductivityKeeperWeb.Repositories
             subcategory = TaskRelatedInitializar.FillSubcategory(subcategory, allSubs);
             var item = await _context.Subcategories.AddAsync(subcategory);
 
-            _context.Entry(item.Entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            _context.Entry(item.Entity).State = EntityState.Added;
 
             await _context.SaveChangesAsync();
             return subcategory;
@@ -76,7 +76,7 @@ namespace ProductivityKeeperWeb.Repositories
         {
             var item = await _context.Subcategories.FindAsync(subcategory.Id);
             item.Name = subcategory.Name;
-            _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _context.Entry(item).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return subcategory;
         }
@@ -85,7 +85,7 @@ namespace ProductivityKeeperWeb.Repositories
         {
             var item = await _context.Subcategories.FindAsync(subcategoryId);
 
-            _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
+            _context.Entry(item).State = EntityState.Deleted;
 
             await _context.SaveChangesAsync();
         }
@@ -105,21 +105,44 @@ namespace ProductivityKeeperWeb.Repositories
             var item = await _context.Tasks.AddAsync(task);
 
             _context.Entry(subcategoryItem).State = EntityState.Modified;
-            _context.Entry(item.Entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            _context.Entry(item.Entity).State = EntityState.Added;
 
             await _context.SaveChangesAsync();
-            return task;
+            return await _tasksReadService.GetTask(task.Id);
         }
 
         public async Task<TaskItem> UpdateTaskItem(TaskItem task)
         {
-            var item = await _context.Tasks.FindAsync(task.Id);
+            var item = await _context.Tasks
+                .FirstOrDefaultAsync(t => t.Id == task.Id);
+
+            if (item == null)
+                throw new ArgumentNullException($"Task was not found with id {task.Id}");
+
             item.Text = task.Text;
             item.Deadline = task.Deadline?.ToLocalTime();
             item.DoneDate = task.IsChecked ? DateTime.Now : null;
             item.IsChecked = task.IsChecked;
 
-            item.Subcategories = task.Subcategories;
+            item.Subcategories = await _context.Subcategories
+                .Where(sub => task.Subcategories.Select(s => s.Id).Contains(sub.Id))
+                .ToListAsync();
+
+            var relationsMap = await _context.SubcategoriesTasks.AsNoTracking()
+                .Where(sc => sc.TaskItemId == task.Id)
+                .ToListAsync();
+            _context.SubcategoriesTasks.RemoveRange(relationsMap);
+
+            if (task.Subcategories?.Any() ?? false)
+            {
+                _context.SubcategoriesTasks.AddRange(
+                    task.Subcategories.Select(subcategory =>
+                    new SubcategoryTask
+                    {
+                        SubcategoryId = subcategory.Id,
+                        TaskItemId = item.Id
+                    }));
+            }
 
             item.IsRepeatable = task.IsRepeatable;
 
@@ -138,30 +161,15 @@ namespace ProductivityKeeperWeb.Repositories
                 item.HabbitIntervalInHours = null;
             }
 
-            var subcategoryTasksToSkip = await _context.SubcategoriesTasks
-                .Where(st => st.TaskItemId == task.Id)
-                .ToListAsync();
-            subcategoryTasksToSkip = subcategoryTasksToSkip
-                .Where(sts => task.Subcategories
-                    .Any(s => s.Id == sts.SubcategoryId))
-                .ToList();
-
-            foreach (var sts in subcategoryTasksToSkip)
-            {
-                _context.SubcategoriesTasks.Entry(sts).State = EntityState.Unchanged;
-            }
-
-            _context.Entry(item).State = EntityState.Modified;
-
             await _context.SaveChangesAsync();
-            return task;
+            return await _tasksReadService.GetTask(task.Id);
         }
 
         public async Task DeleteTaskItem(int taskId)
         {
             var item = await _context.Tasks.FindAsync(taskId);
 
-            _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
+            _context.Entry(item).State = EntityState.Deleted;
 
             await _context.SaveChangesAsync();
         }
@@ -171,7 +179,7 @@ namespace ProductivityKeeperWeb.Repositories
         {
             var item = await _context.Statistics.FindAsync(statistic);
 
-            _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _context.Entry(item).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
 

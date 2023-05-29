@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Data;
+using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
-using ProductivityKeeperWeb.Repositories.Interfaces;
 
 namespace ProductivityKeeperWeb.Controllers
 {

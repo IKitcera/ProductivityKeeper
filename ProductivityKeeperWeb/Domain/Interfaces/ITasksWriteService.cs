@@ -2,7 +2,7 @@
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using System.Threading.Tasks;
 
-namespace ProductivityKeeperWeb.Repositories.Interfaces
+namespace ProductivityKeeperWeb.Domain.Interfaces
 {
     public interface ITasksWriteService
     {

@@ -1,7 +1,7 @@
 ﻿using ProductivityKeeperWeb.Domain.Models;
 using System.Threading.Tasks;
 
-namespace ProductivityKeeperWeb.Services
+namespace ProductivityKeeperWeb.Domain.Interfaces
 {
     public interface IAnalytics
     {

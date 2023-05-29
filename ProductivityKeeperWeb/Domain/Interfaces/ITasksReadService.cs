@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace ProductivityKeeperWeb.Repositories.Interfaces
+namespace ProductivityKeeperWeb.Domain.Interfaces
 {
     public interface ITasksReadService
     {
@@ -20,9 +20,9 @@ namespace ProductivityKeeperWeb.Repositories.Interfaces
         Task<Subcategory> GetSubcategoryBrief(int subcategoryId);
 
         Task<TaskItem> GetTask(int taskId);
+        Task<List<Tag>> GetTags(int unitId);
 
-        //Task<IEnumerable<TaskItem>> GetTasks(int unitId);
-        //Task<IEnumerable<TaskItem>> GetConnectedTasks();
+        //  Task<IEnumerable<TaskItem>> GetTasks(int taskId);
 
         Task<UserStatistic> GetStatistic(int unitId);
     }

@@ -10,9 +10,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Data;
-using ProductivityKeeperWeb.Repositories;
-using ProductivityKeeperWeb.Repositories.Interfaces;
 using ProductivityKeeperWeb.Services;
+using ProductivityKeeperWeb.Domain.Interfaces;
+using ProductivityKeeperWeb.Services.Repositories;
 
 namespace ProductivityKeeperWeb
 {
@@ -114,6 +114,8 @@ namespace ProductivityKeeperWeb
             services.AddControllers();
             services.AddScoped<ITasksReadService, TasksReadService>();
             services.AddScoped<ITasksWriteService, TasksWriteService>();
+            services.AddScoped<IAuthService, AuthService>();
+
             services.AddScoped<IAnalytics, AnalyticService>();
 
         }

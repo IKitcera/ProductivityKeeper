@@ -1,6 +1,6 @@
-﻿using ProductivityKeeperWeb.Domain.Models;
+﻿using ProductivityKeeperWeb.Domain.Interfaces;
+using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
-using ProductivityKeeperWeb.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

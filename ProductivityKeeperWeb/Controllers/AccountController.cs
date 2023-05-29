@@ -2,12 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ProductivityKeeperWeb.Domain.Models;
-using ProductivityKeeperWeb.Domain.Utils;
 using ProductivityKeeperWeb.Data;
+using ProductivityKeeperWeb.Domain;
+using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
-using ProductivityKeeperWeb.Repositories.Interfaces;
-using ProductivityKeeperWeb.Services;
+using ProductivityKeeperWeb.Domain.Utils;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -133,7 +132,8 @@ namespace ProductivityKeeperWeb.Controllers
                 var claims = new System.Collections.Generic.List<Claim>
                 {
                     new Claim(ClaimsIdentity.DefaultNameClaimType, user.Email),
-                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.ToString())
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.ToString()),
+                    new Claim(Constants.UnitIdClaim, user.UnitId.ToString())
                 };
                 ClaimsIdentity claimsIdentity =
                 new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
