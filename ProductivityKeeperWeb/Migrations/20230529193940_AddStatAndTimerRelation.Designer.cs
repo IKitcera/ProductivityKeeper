@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductivityKeeperWeb.Data;
 
@@ -11,9 +12,11 @@ using ProductivityKeeperWeb.Data;
 namespace ProductivityKeeperWeb.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20230529193940_AddStatAndTimerRelation")]
+    partial class AddStatAndTimerRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,33 +24,6 @@ namespace ProductivityKeeperWeb.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.ArchivedTask", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("Deadline")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DoneDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UnitId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UnitId");
-
-                    b.ToTable("ArchivedTasks");
-                });
 
             modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Category", b =>
                 {
@@ -309,17 +285,6 @@ namespace ProductivityKeeperWeb.Migrations
                     b.ToTable("Statistics");
                 });
 
-            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.ArchivedTask", b =>
-                {
-                    b.HasOne("ProductivityKeeperWeb.Domain.Models.TaskRelated.Unit", "Unit")
-                        .WithMany("TaskArchive")
-                        .HasForeignKey("UnitId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Unit");
-                });
-
             modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Category", b =>
                 {
                     b.HasOne("ProductivityKeeperWeb.Domain.Models.TaskRelated.Unit", null)
@@ -357,6 +322,39 @@ namespace ProductivityKeeperWeb.Migrations
                     b.Navigation("Subcategory");
 
                     b.Navigation("TaskItem");
+                });
+
+            modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.TaskRelated.Unit", b =>
+                {
+                    b.OwnsMany("ProductivityKeeperWeb.Domain.Models.TaskRelated.ArchivedTask", "TaskArchive", b1 =>
+                        {
+                            b1.Property<int>("UnitId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime?>("Deadline")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime?>("DoneDate")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<int>("Status")
+                                .HasColumnType("int");
+
+                            b1.HasKey("UnitId", "Id");
+
+                            b1.ToTable("ArchivedTask");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UnitId");
+                        });
+
+                    b.Navigation("TaskArchive");
                 });
 
             modelBuilder.Entity("ProductivityKeeperWeb.Domain.Models.Timer", b =>
@@ -427,8 +425,6 @@ namespace ProductivityKeeperWeb.Migrations
                     b.Navigation("Categories");
 
                     b.Navigation("Statistic");
-
-                    b.Navigation("TaskArchive");
 
                     b.Navigation("Timer");
                 });

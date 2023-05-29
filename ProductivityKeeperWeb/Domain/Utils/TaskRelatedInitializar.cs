@@ -38,10 +38,11 @@ namespace ProductivityKeeperWeb.Domain.Utils
                     },
 
                     new Subcategory { Name = "Home", Position = 2 },
-                    new Subcategory { Name = "Relax", Position = 3, Tasks = new List<TaskItem>
-                    {
-                        new TaskItem { Text = "Be happy", IsChecked = true }
-                    }
+                    new Subcategory { Name = "Relax", Position = 3,
+                        Tasks = new List<TaskItem>
+                        {
+                            new TaskItem { Text = "Be happy", IsChecked = true, DoneDate = System.DateTime.Today }
+                        }
                     }
                 }
             };
@@ -68,6 +69,8 @@ namespace ProductivityKeeperWeb.Domain.Utils
             unit.Timer.Label = "Learn English";
             unit.Timer.Goal = 92 * 24 * 3600;
             unit.Timer.Ticked = 0;
+
+            unit.Statistic = new Models.UserStatistic();
 
             return unit;
         }

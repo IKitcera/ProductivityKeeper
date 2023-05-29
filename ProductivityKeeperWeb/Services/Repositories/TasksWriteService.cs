@@ -8,6 +8,8 @@ using ProductivityKeeperWeb.Domain.Interfaces;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace ProductivityKeeperWeb.Services.Repositories
 {
@@ -16,7 +18,10 @@ namespace ProductivityKeeperWeb.Services.Repositories
     {
         private readonly ApplicationContext _context;
         private readonly ITasksReadService _tasksReadService;
-        public TasksWriteService(ApplicationContext context, ITasksReadService tasksReadService)
+        public TasksWriteService(
+            ApplicationContext context,
+            ITasksReadService tasksReadService
+            )
         {
             _context = context;
             _tasksReadService = tasksReadService;
@@ -79,6 +84,21 @@ namespace ProductivityKeeperWeb.Services.Repositories
             _context.Entry(item).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return subcategory;
+        }
+
+        public async Task ReorderSubcategories(IEnumerable<int> ids)
+        {
+            var targetSubs = await _context.Subcategories
+                .Where(sub => ids.Contains(sub.Id))
+                .ToListAsync();
+
+            for (int i = 0; i < ids.Count(); i++)
+            {
+                var match = targetSubs.First(x => x.Id == ids.ElementAt(i));
+                match.Position = i;
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteSubcategory(int subcategoryId)
@@ -162,14 +182,48 @@ namespace ProductivityKeeperWeb.Services.Repositories
             }
 
             await _context.SaveChangesAsync();
-            return await _tasksReadService.GetTask(task.Id);
+            return await _tasksReadService.GetTask(task.Id); // Think about logic separation to avoid here this service
         }
 
-        public async Task DeleteTaskItem(int taskId)
+        public async Task<TaskItem> ChangeTaskStatus(int taskId)
+        {
+            var task = await _context.Tasks.FindAsync(taskId);
+            task.IsChecked = !task.IsChecked;
+            task.DoneDate = task.IsChecked ? DateTime.Now : null;
+
+
+            if (task.IsRepeatable && task.IsChecked)
+            {
+                task.TimesToRepeat = task.TimesToRepeat - 1 > 0 ? task.TimesToRepeat - 1 : 0;
+            }
+
+            await _context.SaveChangesAsync();
+            return await _tasksReadService.GetTask(task.Id); // same
+        }
+
+        public async Task DeleteTaskItem(int taskId, int unitId)
         {
             var item = await _context.Tasks.FindAsync(taskId);
 
             _context.Entry(item).State = EntityState.Deleted;
+
+            var archievedTask = new ArchivedTask { UnitId = unitId };
+            if (item.IsChecked)
+            {
+                archievedTask.Status = ArchievedTaskStatus.Done;
+                archievedTask.DoneDate = item.DoneDate;
+            }
+            else if (item.Deadline.HasValue && DateTime.Now.Date > item.Deadline.Value)
+            {
+                archievedTask.Status = ArchievedTaskStatus.Expired;
+            }
+            else
+            {
+                archievedTask.Status = ArchievedTaskStatus.Undone;
+            }
+            archievedTask.Deadline = item.Deadline;
+           
+            await _context.ArchivedTasks.AddAsync(archievedTask);
 
             await _context.SaveChangesAsync();
         }
@@ -177,13 +231,49 @@ namespace ProductivityKeeperWeb.Services.Repositories
         // Statistic
         public async Task<UserStatistic> UpdateUserStatistic(UserStatistic statistic)
         {
-            var item = await _context.Statistics.FindAsync(statistic);
+            var item = await _context.Statistics.FindAsync(statistic.Id);
 
             _context.Entry(item).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
 
             return item;
+        }
+
+        public async Task<Unit> AddUnitForNewCommer(string email)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var unit = new Unit { UserId = email };
+                unit = TaskRelatedInitializar.FillUnitForNewcommer(unit);
+
+                await _context.Units.AddAsync(unit);
+
+                await _context.SaveChangesAsync();
+
+                unit.StatisticId = unit.Statistic.Id;
+                unit.TimerId = unit.Timer.Id;
+
+                _context.Entry(unit).State = EntityState.Modified;
+
+                var statToUpdate = await _context.Statistics.FirstOrDefaultAsync(x => x.Id == unit.Statistic.Id);
+                AnalysisUtil.CountStatistic(unit, statToUpdate);
+
+                _context.Statistics.Entry(statToUpdate).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                // Rollback the transaction in case of any exception
+                await transaction.RollbackAsync();
+                throw; // Rethrow the exception to be handled at a higher level
+            }
+            return await _context.Units.FirstOrDefaultAsync(u => u.UserId == email);
         }
     }
 }

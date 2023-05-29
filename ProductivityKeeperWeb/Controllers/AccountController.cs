@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain;
+using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Domain.Utils;
@@ -19,9 +21,12 @@ namespace ProductivityKeeperWeb.Controllers
     public class AccountController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        public AccountController(ApplicationContext context)
+        // TODO: Remove because move to authservice
+        private readonly ITasksWriteService _tasksWriteService;
+        public AccountController(ApplicationContext context, ITasksWriteService tasksWriteService)
         {
             _context = context;
+            _tasksWriteService = tasksWriteService;
         }
 
         [HttpPost("/token")]
@@ -53,12 +58,7 @@ namespace ProductivityKeeperWeb.Controllers
             if (await UserExists(user.Email))
                 return BadRequest(new { message = "User with this email already exists" });
 
-            var unit = new Unit { UserId = user.Email };
-            unit = TaskRelatedInitializar.FillUnitForNewcommer(unit);
-            await _context.Units.AddAsync(unit);
-            await _context.SaveChangesAsync();
-
-            var theUnit = await _context.Units.FirstOrDefaultAsync(u => u.UserId == user.Email);
+            var unit = await _tasksWriteService.AddUnitForNewCommer(user.Email);
 
             var concerteUser = new User
             {
@@ -66,7 +66,7 @@ namespace ProductivityKeeperWeb.Controllers
                 HashPassword = user.HashPassword,
                 Role = Domain.Models.User.Roles.User,
                 RegistrationDate = DateTime.UtcNow,
-                UnitId = theUnit.Id
+                UnitId = unit.Id
             };
 
             await _context.Users.AddAsync(concerteUser);

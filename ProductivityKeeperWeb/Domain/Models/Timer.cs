@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,7 +15,8 @@ namespace ProductivityKeeperWeb.Domain.Models
         public long Goal { get; set; }
         public int Format { get; set; }
 
-        [ForeignKey(nameof(UnitId))]
         public int UnitId { get; set; }
+        [JsonIgnore]
+        public Unit Unit { get; set; }
     }
 }

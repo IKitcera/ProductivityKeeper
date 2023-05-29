@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using ProductivityKeeperWeb.Domain.Models;
-using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain.Interfaces;
+using ProductivityKeeperWeb.Domain.Models;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
+using ProductivityKeeperWeb.Domain.Utils;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ProductivityKeeperWeb.Domain.Utils;
 
 namespace ProductivityKeeperWeb.Services.Repositories
 {
@@ -15,36 +15,41 @@ namespace ProductivityKeeperWeb.Services.Repositories
     public class TasksReadService : ITasksReadService
     {
         private readonly ApplicationContext _context;
+        private readonly IAuthService _authService;
 
-        public TasksReadService(ApplicationContext context)
+        public TasksReadService(ApplicationContext context, IAuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
-        public Task<Unit> GetUnit(string userName)
+        public async Task<Unit> GetUnit()
         {
-            return _context.Units.AsNoTracking()
+            var unit = await _context.Units.AsNoTracking()
                 .Include(u => u.Categories)
                     .ThenInclude(c => c.Subcategories)
                         .ThenInclude(s => s.Tasks)
-                .Where(unit => unit.UserId == userName)
-                .SingleOrDefaultAsync();
+                .FirstOrDefaultAsync(unit => unit.Id == _authService.GetUnitId());
+
+
+            unit.Categories = unit.Categories.OrderBy(c => c.Position).ToList();
+
+            foreach (var ctg in unit.Categories.Where(c => c.Subcategories.Count > 0))
+            { 
+                ctg.Subcategories = ctg.Subcategories.OrderBy(s => s.Position).ToList();
+
+                foreach(var sub in ctg.Subcategories.Where(s => s.Tasks.Count > 0))
+                {
+                    sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ThenBy(x => x.Position).ToList();
+                }
+            }
+            return unit;
         }
 
-        public async Task<Unit> GetUnit(int unitID)
-        {
-            return await _context.Units.AsNoTracking()
-                .Include(u => u.Categories)
-                    .ThenInclude(c => c.Subcategories)
-                        .ThenInclude(s => s.Tasks)
-                .Where(unit => unit.Id == unitID)
-                .SingleOrDefaultAsync();
-        }
-
-        public Task<Unit> GetUnitBrief(int unitId)
+        public Task<Unit> GetUnitBrief()
         {
             return _context.Units.AsNoTracking()
-                .Where(u => u.Id == unitId)
+                .Where(u => u.Id == _authService.GetUnitId())
                 .FirstOrDefaultAsync();
         }
 
@@ -104,16 +109,17 @@ namespace ProductivityKeeperWeb.Services.Repositories
                .ToListAsync();
         }
 
-        public Task<UserStatistic> GetStatistic(int unitId)
+        public Task<UserStatistic> GetStatistic()
         {
             return _context.Statistics.AsNoTracking()
-                .Where(s => s.UnitId == unitId)
+                .Where(s => s.UnitId == _authService.GetUnitId())
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<List<Tag>> GetTags(int unitId)
+        public async Task<List<Tag>> GetTags()
         {
             var res = await _context.SubcategoriesTasks.AsNoTracking()
+              .Where(st => st.Subcategory.Category.UnitId == _authService.GetUnitId())
               .Select(st => new Tag
               {
                   CategoryId = st.Subcategory.CategoryId,

@@ -117,6 +117,7 @@ namespace ProductivityKeeperWeb
             services.AddScoped<IAuthService, AuthService>();
 
             services.AddScoped<IAnalytics, AnalyticService>();
+            services.AddScoped<ITimerService, TimerService>();
 
         }
 

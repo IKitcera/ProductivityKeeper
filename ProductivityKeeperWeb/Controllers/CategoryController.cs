@@ -29,14 +29,14 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpGet]
         public async Task<ActionResult<Unit>> GetUnit()
         {
-            Unit unit = await _taskReadService.GetUnit(User.Identity.Name);
+            Unit unit = await _taskReadService.GetUnit();
             return unit == null ? (ActionResult<Unit>)BadRequest("Invalid unit id") : (ActionResult<Unit>)Ok(unit);
         }
 
         [HttpGet("Categories")]
         public async Task<ActionResult<IEnumerable<Category>>> GetJustCategories(int unitId)
         {
-            Unit unit = await _taskReadService.GetUnit(User.Identity.Name);
+            Unit unit = await _taskReadService.GetUnit();
             return unit == null ? (ActionResult<IEnumerable<Category>>)Unauthorized() : (ActionResult<IEnumerable<Category>>)unit.Categories;
         }
 

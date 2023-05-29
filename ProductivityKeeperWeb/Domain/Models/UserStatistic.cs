@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProductivityKeeperWeb.Domain.Models
 {
@@ -14,9 +15,9 @@ namespace ProductivityKeeperWeb.Domain.Models
         public int CountOfDoneToday { get; set; }
         public int CountOfDoneTotal { get; set; }
         public int CountOfExpiredTotal { get; set; }
-
-        [ForeignKey(nameof(UnitId))]
         public int UnitId { get; set; }
+        [JsonIgnore]
+        public Unit Unit { get; set; }
 
         // Won't be writtent to db
         public int TasksOnToday;

@@ -12,11 +12,11 @@ namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
         [JsonIgnore]
         public string UserId { get; init; }
         public List<Category> Categories { get; set; } = new List<Category>();
+        public int TimerId { get; set; }
         public Timer Timer { get; set; } = new Timer();
-
-        [ForeignKey(nameof(StatisticId))]
         public int StatisticId { get; set; }
-        //  public UserStatistic Statistic { get; set; }
+        public UserStatistic Statistic { get; set; } = new UserStatistic();
+
         public List<ArchivedTask> TaskArchive { get; set; } = new List<ArchivedTask>();
     }
 }

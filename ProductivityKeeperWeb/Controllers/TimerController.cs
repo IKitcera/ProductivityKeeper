@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
+using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb.Controllers
 {
@@ -12,50 +12,37 @@ namespace ProductivityKeeperWeb.Controllers
     [ApiController]
     public class TimerController : ControllerBase
     {
-        private readonly ApplicationContext context;
-        private readonly ITasksReadService _tasksReadServicet;
+        private readonly ITimerService _timerService;
 
-        public TimerController(ApplicationContext context, ITasksReadService tasksReadService)
+        public TimerController(ITimerService timerService)
         {
-            this.context = context;
-            _tasksReadServicet = tasksReadService;
+            _timerService = timerService;
         }
+
         [HttpGet]
-        public async System.Threading.Tasks.Task<ActionResult<Timer>> GetTimer()
+        public async Task<ActionResult<Timer>> GetTimer()
         {
-            var unit = await _tasksReadServicet.GetUnit(User.Identity.Name);
-            return unit.Timer;
+           return await _timerService.GetTimer();
         }
 
         [HttpPost]
-        public async System.Threading.Tasks.Task<IActionResult> SetTimer(Timer timer)
+        public async Task<Timer> SetTimer(Timer timer)
         {
-            var unit = await _tasksReadServicet.GetUnit(User.Identity.Name);
+            return await _timerService.SetTimer(timer);
+        }
 
-            context.Entry(unit).State = EntityState.Modified;
-            unit.Timer = timer;
-            await context.SaveChangesAsync();
+        [HttpPost("update-ticked")]
+        public async Task<IActionResult> SetTimer(long tickedSeconds)
+        {
+            await _timerService.UpdateTicked(tickedSeconds);
             return Ok();
         }
 
-        //[HttpPost("/update-ticked")]
-        //public async System.Threading.Tasks.Task<IActionResult> SetTimer(long tickedSeconds)
-        //{
-        //    var unit = await _tasksReadServicet.GetUnit(timer.UnitId);
-        //    context.Entry(unit).State = EntityState.Modified;
-        //    unit.Timer.Ticked = tickedSeconds;
-        //    await context.SaveChangesAsync();
-        //    return Ok();
-        //}
-
-        //[HttpPut("update-format")]
-        //public async System.Threading.Tasks.Task<IActionResult> UpdateFormat(int newFormat)
-        //{
-        //    var unit = await helper.GetUnit();
-        //    context.Entry(unit).State = EntityState.Modified;
-        //    unit.Timer.Format = newFormat;
-        //    await context.SaveChangesAsync();
-        //    return Ok();
-        //}
+        [HttpPut("update-format")]
+        public async Task<IActionResult> UpdateFormat(int newFormat)
+        {
+            await _timerService.UpdateFormat(newFormat);
+            return Ok();
+        }
     }
 }

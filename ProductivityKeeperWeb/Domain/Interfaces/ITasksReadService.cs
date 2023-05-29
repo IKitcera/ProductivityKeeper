@@ -9,9 +9,8 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
 {
     public interface ITasksReadService
     {
-        Task<Unit> GetUnit(string userName);
-        Task<Unit> GetUnit(int unitID);
-        Task<Unit> GetUnitBrief(int unitId);
+        Task<Unit> GetUnit();
+        Task<Unit> GetUnitBrief();
 
         Task<Category> GetCategory(int categoryId);
         Task<Category> GetCategoryBrief(int categoryId);
@@ -20,10 +19,10 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
         Task<Subcategory> GetSubcategoryBrief(int subcategoryId);
 
         Task<TaskItem> GetTask(int taskId);
-        Task<List<Tag>> GetTags(int unitId);
+        Task<List<Tag>> GetTags();
 
         //  Task<IEnumerable<TaskItem>> GetTasks(int taskId);
 
-        Task<UserStatistic> GetStatistic(int unitId);
+        Task<UserStatistic> GetStatistic();
     }
 }

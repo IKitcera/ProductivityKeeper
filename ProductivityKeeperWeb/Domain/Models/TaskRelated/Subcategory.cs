@@ -19,7 +19,6 @@ namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
         public List<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 
 
-        //todo: remove
         [JsonIgnore]
         public int Position { get; set; }
         [JsonIgnore]

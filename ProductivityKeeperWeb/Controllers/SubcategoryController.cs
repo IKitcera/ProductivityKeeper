@@ -74,6 +74,12 @@ namespace ProductivityKeeperWeb.Controllers
             return await _taskWriteService.AddSubcategory(subcategory);
         }
 
+        [HttpPost("reorder")]
+        public async Task ReorderSubs([FromBody] IEnumerable<int> ids)
+        {
+            await _taskWriteService.ReorderSubcategories(ids);
+        }
+
         // DELETE: api/Subcategory/5
         [HttpDelete("{subcategoryId}")]
         public async Task<IActionResult> DeleteSubcategory(int subcategoryId)

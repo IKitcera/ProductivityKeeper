@@ -47,8 +47,7 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpGet("tags")]
         public async Task<ActionResult<List<Tag>>> GetTags()
         {
-            var unitId = _authService.GetUnitId();
-            var res = await _taskReadService.GetTags(unitId);
+            var res = await _taskReadService.GetTags();
             return res;
         }
 
@@ -72,6 +71,12 @@ namespace ProductivityKeeperWeb.Controllers
             }
         }
 
+        [HttpPost("change-status")]
+        public async Task<ActionResult<TaskItem>> ChangeTasksStatus([FromBody]int taskId)
+        {
+            return await _taskWriteService.ChangeTaskStatus(taskId);
+        }
+
         // POST: api/Categorys
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -84,7 +89,7 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpDelete("{taskId}")]
         public async Task<IActionResult> DeleteTask(int taskId)
         {
-            await _taskWriteService.DeleteTaskItem(taskId);
+            await _taskWriteService.DeleteTaskItem(taskId, _authService.GetUnitId());
             return Ok();
         }
 
