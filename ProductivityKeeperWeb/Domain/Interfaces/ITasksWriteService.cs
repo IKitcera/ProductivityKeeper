@@ -10,6 +10,7 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
         // Category 
         Task<Category> AddCategory(Category category);
         Task<Category> UpdateCategory(Category category);
+        Task ReorderCategories(IEnumerable<Category> categories);
         Task DeleteCategory(int categoryId);
 
         // Subcategory 
@@ -22,7 +23,7 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
         Task<TaskItem> AddTaskItem(TaskItem task);
         Task<TaskItem> UpdateTaskItem(TaskItem task);
         Task<TaskItem> ChangeTaskStatus(int taskId);
-        Task DeleteTaskItem(int taskId, int unitId);
+        Task DeleteTaskItem(int taskId);
 
         // Statistic
         Task<UserStatistic> UpdateUserStatistic(UserStatistic statistic);

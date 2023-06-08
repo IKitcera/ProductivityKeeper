@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using ProductivityKeeperWeb.Domain;
 using ProductivityKeeperWeb.Domain.Interfaces;
 using System.Linq;
@@ -15,9 +16,10 @@ namespace ProductivityKeeperWeb.Services
 
         public int GetUnitId()
         {
+            var context = _httpContextAccessor?.HttpContext;
             int result;
             if (int.TryParse(
-                _httpContextAccessor.HttpContext.User.Claims
+                context.User.Claims
                     .FirstOrDefault(claim => claim.Type == Constants.UnitIdClaim)
                     ?.Value,
                 out result))
@@ -25,6 +27,12 @@ namespace ProductivityKeeperWeb.Services
                 return result;
             }
             throw new System.Exception("Cannot find claim of Unit Id");
+        }
+
+        public string GetUserEmail()
+        {
+            var context = _httpContextAccessor?.HttpContext;
+            return context.User.Identity.Name;
         }
     }
 }

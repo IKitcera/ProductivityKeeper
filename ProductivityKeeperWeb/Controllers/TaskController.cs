@@ -16,16 +16,14 @@ namespace ProductivityKeeperWeb.Controllers
     {
         private readonly ITasksReadService _taskReadService;
         private readonly ITasksWriteService _taskWriteService;
-        private readonly IAuthService _authService;
 
         public TaskController(
             ITasksReadService taskReadService,
-            ITasksWriteService taskWriteService,
-            IAuthService authService)
+            ITasksWriteService taskWriteService
+            )
         {
             _taskReadService = taskReadService;
             _taskWriteService = taskWriteService;
-            _authService = authService;
         }
 
 
@@ -89,7 +87,7 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpDelete("{taskId}")]
         public async Task<IActionResult> DeleteTask(int taskId)
         {
-            await _taskWriteService.DeleteTaskItem(taskId, _authService.GetUnitId());
+            await _taskWriteService.DeleteTaskItem(taskId);
             return Ok();
         }
 

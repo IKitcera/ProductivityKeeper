@@ -21,7 +21,7 @@ namespace ProductivityKeeperWeb.Domain.Utils
 
             List<TaskItem> ConnectedTasks = AllTasks
                 .Where(task => task.Subcategories.Count > 1)
-                .ToList();
+                .ToList(); // todo: fix
 
             var singleTasks = AllTasks
                 .Where(task => task.Subcategories.Count == 1)

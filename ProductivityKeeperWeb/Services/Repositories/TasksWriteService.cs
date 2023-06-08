@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Data;
+using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Domain.Utils;
-using ProductivityKeeperWeb.Domain.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace ProductivityKeeperWeb.Services.Repositories
 {
@@ -18,13 +18,20 @@ namespace ProductivityKeeperWeb.Services.Repositories
     {
         private readonly ApplicationContext _context;
         private readonly ITasksReadService _tasksReadService;
+        private readonly IBackgroundJobClient _backgroundJobClient;
+        private readonly IAuthService _authService;
+
         public TasksWriteService(
             ApplicationContext context,
-            ITasksReadService tasksReadService
+            ITasksReadService tasksReadService,
+            IBackgroundJobClient backgroundJobClient,
+            IAuthService authService
             )
         {
             _context = context;
             _tasksReadService = tasksReadService;
+            _backgroundJobClient = backgroundJobClient;
+            _authService = authService;
         }
 
         // Category 
@@ -55,11 +62,24 @@ namespace ProductivityKeeperWeb.Services.Repositories
 
         public async Task DeleteCategory(int categoryId)
         {
-            var item = await _context.Categories.FindAsync(categoryId);
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            _context.Entry(item).State = EntityState.Deleted;
+            try
+            {
+                var item = await _context.Categories.FindAsync(categoryId);
 
-            await _context.SaveChangesAsync();
+                _context.Entry(item).State = EntityState.Deleted;
+
+                await _context.SaveChangesAsync();
+
+                RunBackgroundUpdateStatisticJob(_authService.GetUnitId());
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+            }
         }
 
         // Subcategory 
@@ -101,137 +121,238 @@ namespace ProductivityKeeperWeb.Services.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteSubcategory(int subcategoryId)
+        public async Task ReorderCategories(IEnumerable<Category> categories)
         {
-            var item = await _context.Subcategories.FindAsync(subcategoryId);
+            var ids = categories.Select(x => x.Id);
 
-            _context.Entry(item).State = EntityState.Deleted;
+            var targetCategories = await _context.Categories
+                .Where(cat => ids.Contains(cat.Id))
+                .ToListAsync();
+
+            int i = 0;
+            foreach (var category in categories)
+            {
+                var match = targetCategories.First(x => x.Id == category.Id);
+                match.Position = i;
+                match.IsVisible = category.IsVisible;
+                match.ColorHex = category.ColorHex;
+                i++;
+            }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteSubcategory(int subcategoryId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var item = await _context.Subcategories.FindAsync(subcategoryId);
+
+                _context.Entry(item).State = EntityState.Deleted;
+
+                await _context.SaveChangesAsync();
+
+                RunBackgroundUpdateStatisticJob(_authService.GetUnitId());
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+            }
         }
 
         // TaskItem 
         public async Task<TaskItem> AddTaskItem(TaskItem task)
         {
-            task = TaskRelatedInitializar.FillTask(task);
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
+            try
+            {
+                task = TaskRelatedInitializar.FillTask(task);
 
-            var subcategoryItem = await _context.Subcategories.FindAsync(task.Subcategories[0].Id);
+                var subcategoryItem = await _context.Subcategories.FindAsync(task.Subcategories[0].Id);
 
-            if (subcategoryItem == null)
-                throw new InvalidOperationException("Cannot find category id!");
+                if (subcategoryItem == null)
+                    throw new InvalidOperationException("Cannot find category id!");
 
-            task.Subcategories[0] = subcategoryItem;
-            var item = await _context.Tasks.AddAsync(task);
+                task.Subcategories[0] = subcategoryItem;
+                var item = await _context.Tasks.AddAsync(task);
 
-            _context.Entry(subcategoryItem).State = EntityState.Modified;
-            _context.Entry(item.Entity).State = EntityState.Added;
+                _context.Entry(subcategoryItem).State = EntityState.Modified;
+                _context.Entry(item.Entity).State = EntityState.Added;
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
+
+                RunBackgroundUpdateStatisticJob(_authService.GetUnitId());
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+            }
+
             return await _tasksReadService.GetTask(task.Id);
         }
 
         public async Task<TaskItem> UpdateTaskItem(TaskItem task)
         {
-            var item = await _context.Tasks
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var item = await _context.Tasks
                 .FirstOrDefaultAsync(t => t.Id == task.Id);
 
-            if (item == null)
-                throw new ArgumentNullException($"Task was not found with id {task.Id}");
+                if (item == null)
+                    throw new ArgumentNullException($"Task was not found with id {task.Id}");
 
-            item.Text = task.Text;
-            item.Deadline = task.Deadline?.ToLocalTime();
-            item.DoneDate = task.IsChecked ? DateTime.Now : null;
-            item.IsChecked = task.IsChecked;
+                item.Text = task.Text;
+                item.Deadline = task.Deadline?.ToLocalTime();
+                item.DoneDate = task.IsChecked ? DateTime.Now : null;
+                item.IsChecked = task.IsChecked;
 
-            item.Subcategories = await _context.Subcategories
-                .Where(sub => task.Subcategories.Select(s => s.Id).Contains(sub.Id))
-                .ToListAsync();
+                item.Subcategories = await _context.Subcategories
+                    .Where(sub => task.Subcategories.Select(s => s.Id).Contains(sub.Id))
+                    .ToListAsync();
 
-            var relationsMap = await _context.SubcategoriesTasks.AsNoTracking()
-                .Where(sc => sc.TaskItemId == task.Id)
-                .ToListAsync();
-            _context.SubcategoriesTasks.RemoveRange(relationsMap);
+                var relationsMap = await _context.SubcategoriesTasks.AsNoTracking()
+                    .Where(sc => sc.TaskItemId == task.Id)
+                    .ToListAsync();
+                _context.SubcategoriesTasks.RemoveRange(relationsMap);
 
-            if (task.Subcategories?.Any() ?? false)
-            {
-                _context.SubcategoriesTasks.AddRange(
-                    task.Subcategories.Select(subcategory =>
-                    new SubcategoryTask
-                    {
-                        SubcategoryId = subcategory.Id,
-                        TaskItemId = item.Id
-                    }));
+                if (task.Subcategories?.Any() ?? false)
+                {
+                    _context.SubcategoriesTasks.AddRange(
+                        task.Subcategories.Select(subcategory =>
+                        new SubcategoryTask
+                        {
+                            SubcategoryId = subcategory.Id,
+                            TaskItemId = item.Id
+                        }));
+                }
+
+                item.IsRepeatable = task.IsRepeatable;
+
+                if (task.IsRepeatable)
+                {
+                    var completed = item.GoalRepeatCount - item.TimesToRepeat;
+
+                    item.GoalRepeatCount = task.GoalRepeatCount;
+                    item.TimesToRepeat = completed > 0 ? task.GoalRepeatCount - completed : task.GoalRepeatCount;
+                    item.HabbitIntervalInHours = task.HabbitIntervalInHours;
+                }
+                else
+                {
+                    item.GoalRepeatCount = null;
+                    item.TimesToRepeat = null;
+                    item.HabbitIntervalInHours = null;
+                }
+
+                await _context.SaveChangesAsync();
+
+                RunBackgroundUpdateStatisticJob(_authService.GetUnitId());
+
+                await transaction.CommitAsync();
+
+                return await _tasksReadService.GetTask(task.Id); // Think about logic separation to avoid here this service
             }
-
-            item.IsRepeatable = task.IsRepeatable;
-
-            if (task.IsRepeatable)
+            catch (Exception ex)
             {
-                var completed = item.GoalRepeatCount - item.TimesToRepeat;
-
-                item.GoalRepeatCount = task.GoalRepeatCount;
-                item.TimesToRepeat = completed > 0 ? task.GoalRepeatCount - completed : task.GoalRepeatCount;
-                item.HabbitIntervalInHours = task.HabbitIntervalInHours;
+                await transaction.RollbackAsync();
+                throw ex;
             }
-            else
-            {
-                item.GoalRepeatCount = null;
-                item.TimesToRepeat = null;
-                item.HabbitIntervalInHours = null;
-            }
-
-            await _context.SaveChangesAsync();
-            return await _tasksReadService.GetTask(task.Id); // Think about logic separation to avoid here this service
         }
 
         public async Task<TaskItem> ChangeTaskStatus(int taskId)
         {
-            var task = await _context.Tasks.FindAsync(taskId);
-            task.IsChecked = !task.IsChecked;
-            task.DoneDate = task.IsChecked ? DateTime.Now : null;
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-
-            if (task.IsRepeatable && task.IsChecked)
+            try
             {
-                task.TimesToRepeat = task.TimesToRepeat - 1 > 0 ? task.TimesToRepeat - 1 : 0;
-            }
+                var task = await _context.Tasks.FindAsync(taskId);
+                task.IsChecked = !task.IsChecked;
+                task.DoneDate = task.IsChecked ? DateTime.Now : null;
 
-            await _context.SaveChangesAsync();
-            return await _tasksReadService.GetTask(task.Id); // same
+
+                if (task.IsRepeatable && task.IsChecked)
+                {
+                    task.TimesToRepeat = task.TimesToRepeat - 1 > 0 ? task.TimesToRepeat - 1 : 0;
+                }
+
+                await _context.SaveChangesAsync();
+
+                RunBackgroundUpdateStatisticJob(_authService.GetUnitId());
+
+                await transaction.CommitAsync();
+
+                return await _tasksReadService.GetTask(task.Id); // same
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw ex;
+            }
         }
 
-        public async Task DeleteTaskItem(int taskId, int unitId)
+        public async Task DeleteTaskItem(int taskId)
         {
-            var item = await _context.Tasks.FindAsync(taskId);
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            _context.Entry(item).State = EntityState.Deleted;
+            try
+            {
+                var unitId = _authService.GetUnitId();
+                var item = await _context.Tasks.FindAsync(taskId);
 
-            var archievedTask = new ArchivedTask { UnitId = unitId };
-            if (item.IsChecked)
-            {
-                archievedTask.Status = ArchievedTaskStatus.Done;
-                archievedTask.DoneDate = item.DoneDate;
-            }
-            else if (item.Deadline.HasValue && DateTime.Now.Date > item.Deadline.Value)
-            {
-                archievedTask.Status = ArchievedTaskStatus.Expired;
-            }
-            else
-            {
-                archievedTask.Status = ArchievedTaskStatus.Undone;
-            }
-            archievedTask.Deadline = item.Deadline;
-           
-            await _context.ArchivedTasks.AddAsync(archievedTask);
+                _context.Entry(item).State = EntityState.Deleted;
 
-            await _context.SaveChangesAsync();
+                var archievedTask = new ArchivedTask { UnitId = unitId };
+                if (item.IsChecked)
+                {
+                    archievedTask.Status = ArchievedTaskStatus.Done;
+                    archievedTask.DoneDate = item.DoneDate;
+                }
+                else if (item.Deadline.HasValue && DateTime.Now.Date > item.Deadline.Value)
+                {
+                    archievedTask.Status = ArchievedTaskStatus.Expired;
+                }
+                else
+                {
+                    archievedTask.Status = ArchievedTaskStatus.Undone;
+                }
+                archievedTask.Deadline = item.Deadline;
+
+                await _context.ArchivedTasks.AddAsync(archievedTask);
+
+                await _context.SaveChangesAsync();
+
+                RunBackgroundUpdateStatisticJob(unitId);
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw ex;
+            }
         }
 
         // Statistic
+        // TODO: Move
         public async Task<UserStatistic> UpdateUserStatistic(UserStatistic statistic)
         {
-            var item = await _context.Statistics.FindAsync(statistic.Id);
+            var item = await _context.Statistics.Include(s => s.PerDayStatistic)
+                .FirstOrDefaultAsync(x => x.Id == statistic.Id);
+
+            item.CountOfDoneToday = statistic.CountOfDoneToday;
+            item.CountOfDoneTotal = statistic.CountOfDoneTotal;
+            item.CountOfExpiredTotal = statistic.CountOfExpiredTotal;
+            item.PercentOfDoneToday = statistic.PercentOfDoneToday;
+            item.PercentOfDoneTotal = statistic.PercentOfDoneTotal;
+            item.PerDayStatistic = statistic.PerDayStatistic;
 
             _context.Entry(item).State = EntityState.Modified;
 
@@ -275,5 +396,11 @@ namespace ProductivityKeeperWeb.Services.Repositories
             }
             return await _context.Units.FirstOrDefaultAsync(u => u.UserId == email);
         }
+
+        public string RunBackgroundUpdateStatisticJob(int unitId)
+        {
+            return _backgroundJobClient.Enqueue<IAnalytics>(x => x.CountStatistic(unitId));
+        }
+
     }
 }

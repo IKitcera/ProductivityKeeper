@@ -1,18 +1,22 @@
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Data;
-using ProductivityKeeperWeb.Services;
 using ProductivityKeeperWeb.Domain.Interfaces;
+using ProductivityKeeperWeb.Domain.Models;
+using ProductivityKeeperWeb.Hubs;
+using ProductivityKeeperWeb.Services;
 using ProductivityKeeperWeb.Services.Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb
 {
@@ -33,8 +37,12 @@ namespace ProductivityKeeperWeb
             {
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+
+
             }).AddJwtBearer(options =>
                     {
+                        options.Authority = host;
                         options.TokenValidationParameters = new TokenValidationParameters
                         {
                             // ValidateIssuer = true,
@@ -46,20 +54,36 @@ namespace ProductivityKeeperWeb
                             ValidAudience = AuthOptions.AUDIENCE,
                             IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey()
                         };
+
+                        options.Events = new JwtBearerEvents
+                        {
+                            OnMessageReceived = context =>
+                            {
+                                var accessToken = context.Request.Query["access_token"];
+
+                                // If the request is for our hub...
+                                var path = context.HttpContext.Request.Path;
+                                if (!string.IsNullOrEmpty(accessToken) &&
+                                    (path.StartsWithSegments("/chart-hub")))
+                                {
+                                    // Read the token out of the query string
+                                    context.Token = accessToken;
+                                }
+                                return Task.CompletedTask;
+                            }
+                        };
+
                     });
             services.AddCors(options =>
             {
-                options.AddPolicy(host, builder =>
-                {
-                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-                });
-
-                options.AddPolicy("EnableCORS", builder =>
-                {
-                    builder.AllowAnyOrigin()
-                       .AllowAnyHeader()
-                       .AllowAnyMethod();
-                });
+                options.AddPolicy(host,
+                    builder => builder
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    //  .SetIsOriginAllowed((hst) => hst.StartsWith(host))
+                    .SetIsOriginAllowed((hst) => true)
+                    .AllowCredentials());
+                // .WithOrigins(host));
             });
 
             services.AddMvcCore()
@@ -79,6 +103,13 @@ namespace ProductivityKeeperWeb
                 .AddCacheTagHelper()
                 .AddDataAnnotations();
 
+            services.AddHangfire(configuration => configuration.UseSqlServerStorage(
+                Configuration.GetConnectionString("DefaultConnection")));
+            services.AddHangfireServer();
+
+            services.AddSignalR();
+
+
             services.Configure<IISServerOptions>(options =>
             {
                 options.AllowSynchronousIO = true;
@@ -88,29 +119,38 @@ namespace ProductivityKeeperWeb
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProductivityKeeperWeb", Version = "v1" });
 
-                var securitySchema = new OpenApiSecurityScheme
+                // Define the security scheme for JWT authentication
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "Using the Authorization header with the Bearer scheme.",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                };
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
 
-                c.AddSecurityDefinition("Bearer", securitySchema);
-
+                // Add the security requirement for JWT authentication
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    { securitySchema, new[] { "Bearer" } }
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" },
+                            Scheme = "oauth2",
+                            Name = "Bearer",
+                            In = ParameterLocation.Header
+                        },
+                        new List<string>()
+                    }
                 });
             });
+
             services.AddDbContext<ApplicationContext>();
             services.AddHttpContextAccessor();
+            services.AddWebSockets(op =>
+            {
+                op.AllowedOrigins.Add(host);
+            });
             services.AddControllers();
             services.AddScoped<ITasksReadService, TasksReadService>();
             services.AddScoped<ITasksWriteService, TasksWriteService>();
@@ -145,6 +185,7 @@ namespace ProductivityKeeperWeb
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<ChartHub>("/chart-hub");
                 endpoints.MapControllers();
             });
         }

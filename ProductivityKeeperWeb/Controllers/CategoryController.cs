@@ -79,6 +79,13 @@ namespace ProductivityKeeperWeb.Controllers
             }
         }
 
+        [HttpPost("reorder")]
+        public async Task ReorderCateogries([FromBody] IEnumerable<Category> categories)
+        {
+            await _taskWriteService.ReorderCategories(categories);
+        }
+
+
         // DELETE: api/Category/5
         [HttpDelete]
         public async Task<IActionResult> DeleteCategory(int categoryId)

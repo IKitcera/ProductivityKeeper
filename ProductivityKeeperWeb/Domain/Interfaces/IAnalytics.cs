@@ -7,6 +7,6 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
     public interface IAnalytics
     {
         Task<UserStatistic> GetStatistic();
-        Task<UserStatistic> CountStatistic(Unit unit = null);
+        Task<UserStatistic> CountStatistic(int? unitId = null);
     }
 }

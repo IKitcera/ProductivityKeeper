@@ -23,13 +23,15 @@ namespace ProductivityKeeperWeb.Services.Repositories
             _authService = authService;
         }
 
-        public async Task<Unit> GetUnit()
+        public async Task<Unit> GetUnit(int? unitId = null)
         {
+            unitId ??= _authService.GetUnitId();
             var unit = await _context.Units.AsNoTracking()
+                .Include(u => u.Statistic)
                 .Include(u => u.Categories)
                     .ThenInclude(c => c.Subcategories)
                         .ThenInclude(s => s.Tasks)
-                .FirstOrDefaultAsync(unit => unit.Id == _authService.GetUnitId());
+                .FirstOrDefaultAsync(unit => unit.Id == unitId);
 
 
             unit.Categories = unit.Categories.OrderBy(c => c.Position).ToList();
@@ -41,6 +43,11 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 foreach(var sub in ctg.Subcategories.Where(s => s.Tasks.Count > 0))
                 {
                     sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ThenBy(x => x.Position).ToList();
+
+                    foreach(var task in sub.Tasks)
+                    {
+                        task.Subcategories = await GetSubcategoriesByTask(task.Id);
+                    }
                 }
             }
             return unit;
