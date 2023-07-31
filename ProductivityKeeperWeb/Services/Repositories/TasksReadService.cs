@@ -27,7 +27,8 @@ namespace ProductivityKeeperWeb.Services.Repositories
         {
             unitId ??= _authService.GetUnitId();
             var unit = await _context.Units.AsNoTracking()
-                .Include(u => u.Statistic)
+                .Include(u => u.TaskArchive)
+                .Include(u => u.Statistic).ThenInclude(s => s.PerDayStatistic)
                 .Include(u => u.Categories)
                     .ThenInclude(c => c.Subcategories)
                         .ThenInclude(s => s.Tasks)
@@ -119,6 +120,7 @@ namespace ProductivityKeeperWeb.Services.Repositories
         public Task<UserStatistic> GetStatistic()
         {
             return _context.Statistics.AsNoTracking()
+                .Include(s => s.PerDayStatistic)
                 .Where(s => s.UnitId == _authService.GetUnitId())
                 .FirstOrDefaultAsync();
         }

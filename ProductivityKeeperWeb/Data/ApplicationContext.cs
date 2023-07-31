@@ -18,6 +18,7 @@ namespace ProductivityKeeperWeb.Data
         public DbSet<UserStatistic> Statistics { get; set; }
         public DbSet<Timer> Timers { get; set; }
         public DbSet<ArchivedTask> ArchivedTasks { get; set; }
+        public DbSet<DonePerDay> DonePerDays { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
@@ -52,6 +53,16 @@ namespace ProductivityKeeperWeb.Data
                 .HasOne(x => x.Unit)
                 .WithOne(y => y.Statistic)
                 .HasForeignKey<Unit>(u => u.StatisticId);
+
+            modelBuilder.Entity<UserStatistic>()
+               .HasMany(x => x.PerDayStatistic)
+               .WithOne(y => y.Statistic);
+
+            modelBuilder.Entity<DonePerDay>()
+               .HasOne(x => x.Statistic)
+               .WithMany(y => y.PerDayStatistic)
+               .HasForeignKey(x => x.StatisticId);
+            
 
             modelBuilder.Entity<Timer>()
                .HasOne(x => x.Unit)

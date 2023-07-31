@@ -310,20 +310,15 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 _context.Entry(item).State = EntityState.Deleted;
 
                 var archievedTask = new ArchivedTask { UnitId = unitId };
-                if (item.IsChecked)
-                {
-                    archievedTask.Status = ArchievedTaskStatus.Done;
-                    archievedTask.DoneDate = item.DoneDate;
-                }
-                else if (item.Deadline.HasValue && DateTime.Now.Date > item.Deadline.Value)
-                {
-                    archievedTask.Status = ArchievedTaskStatus.Expired;
-                }
-                else
-                {
-                    archievedTask.Status = ArchievedTaskStatus.Undone;
-                }
+                archievedTask.DoneDate = item.DoneDate;
                 archievedTask.Deadline = item.Deadline;
+
+                if (item.IsChecked)
+                    archievedTask.Status = ArchievedTaskStatus.Done;
+                else if (item.Deadline.HasValue && DateTime.Now.Date > item.Deadline.Value)
+                    archievedTask.Status = ArchievedTaskStatus.Expired;
+                else
+                    archievedTask.Status = ArchievedTaskStatus.Undone;
 
                 await _context.ArchivedTasks.AddAsync(archievedTask);
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductivityKeeperWeb.Data;
 
@@ -11,9 +12,11 @@ using ProductivityKeeperWeb.Data;
 namespace ProductivityKeeperWeb.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20230611152435_Refactored done per day data")]
+    partial class Refactoreddoneperdaydata
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,7 +39,7 @@ namespace ProductivityKeeperWeb.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("StatisticId")
+                    b.Property<int?>("StatisticId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -337,9 +340,7 @@ namespace ProductivityKeeperWeb.Migrations
                 {
                     b.HasOne("ProductivityKeeperWeb.Domain.Models.UserStatistic", "Statistic")
                         .WithMany("PerDayStatistic")
-                        .HasForeignKey("StatisticId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("StatisticId");
 
                     b.Navigation("Statistic");
                 });

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using ProductivityKeeperWeb.Domain;
 using ProductivityKeeperWeb.Domain.Interfaces;
+using System;
 using System.Linq;
 
 namespace ProductivityKeeperWeb.Services
@@ -26,7 +28,8 @@ namespace ProductivityKeeperWeb.Services
             {
                 return result;
             }
-            throw new System.Exception("Cannot find claim of Unit Id");
+
+            throw new UnauthorizedAccessException("Cannot find claim of Unit Id");
         }
 
         public string GetUserEmail()

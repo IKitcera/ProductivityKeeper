@@ -10,22 +10,15 @@ namespace ProductivityKeeperWeb.Domain.Utils
     {
         public static UserStatistic CountStatistic(Unit unit, UserStatistic statistic)
         {
-            if (unit.Categories.Count == 0 || unit.Categories.SelectMany(c => c.Subcategories).Count() == 0)
-                return statistic;
+            //if (unit.Categories.Count == 0 || unit.Categories.SelectMany(c => c.Subcategories).Count() == 0)
+            //    return statistic;
 
 
             List<TaskItem> AllTasks = unit.Categories
                     .SelectMany(ctg => ctg.Subcategories
                     .SelectMany(sub => sub.Tasks))
+                    .DistinctBy(task => task.Id)
                     .ToList();
-
-            List<TaskItem> ConnectedTasks = AllTasks
-                .Where(task => task.Subcategories.Count > 1)
-                .ToList(); // todo: fix
-
-            var singleTasks = AllTasks
-                .Where(task => task.Subcategories.Count == 1)
-                .ToList();
 
             statistic.PercentOfDoneTotal = AllTasks.Count > 0 ?
                 (float)AllTasks.Where(t => t.IsChecked).Count() / AllTasks.Count :
@@ -61,34 +54,38 @@ namespace ProductivityKeeperWeb.Domain.Utils
                 .Where(t => t.IsChecked)
                 .Count();
 
-            statistic.PerDayStatistic = CountDonePerDayStatistic(AllTasks);
+            statistic.PerDayStatistic = CountDonePerDayStatistic(AllTasks, statistic.Id);
 
-            UpdateDonePerDayStatisticWithTasksFromArchive(statistic.PerDayStatistic, unit.TaskArchive.ToList());
+            UpdateDonePerDayStatisticWithTasksFromArchive(statistic, unit.TaskArchive.ToList());
             UnionWithArchivedTasks(statistic, unit);
             statistic.PerDayStatistic = statistic.PerDayStatistic.OrderBy(x => x.Date).ToList();
 
             return statistic;
         }
 
-        private static List<DonePerDay> CountDonePerDayStatistic(List<TaskItem> AllTasks)
+        private static List<DonePerDay> CountDonePerDayStatistic(List<TaskItem> allTasks, int statisticId)
         {
             List<DonePerDay> perDayStatistic = new();
 
-            Dictionary<DateTime?, List<TaskItem>> grouppedByDoneDate = AllTasks.Where(t => t.DoneDate.HasValue && t.IsChecked).GroupBy(task => task.DoneDate?.Date)?.ToDictionary(x => x.Key, x => x.ToList());
+            Dictionary<DateTime?, List<TaskItem>> grouppedByDoneDate = allTasks
+                .Where(t => t.DoneDate.HasValue && t.IsChecked)
+                .GroupBy(task => task.DoneDate?.Date)
+                ?.ToDictionary(x => x.Key, x => x.ToList());
 
             foreach (DateTime? date in grouppedByDoneDate.Keys)
             {
                 int doneThatDay = grouppedByDoneDate[date].Count;
-                perDayStatistic.Add(new DonePerDay { Date = date.Value, CountOfDone = doneThatDay });
+                perDayStatistic.Add(new DonePerDay { Date = date.Value, CountOfDone = doneThatDay, StatisticId = statisticId });
             }
 
             return perDayStatistic;
         }
 
-        private static void UpdateDonePerDayStatisticWithTasksFromArchive(List<DonePerDay> perDayStat, List<ArchivedTask> archivedTasks)
+        private static void UpdateDonePerDayStatisticWithTasksFromArchive(UserStatistic statistic, List<ArchivedTask> archivedTasks)
         {
-            List<DonePerDay> perDayStatistic = new();
+            statistic.PerDayStatistic ??= new();
 
+            // Add stat form archive
             Dictionary<DateTime?, List<ArchivedTask>> grouppedByDoneDate = archivedTasks
                 .Where(t => t.DoneDate.HasValue && t.Status == ArchievedTaskStatus.Done)
                 .GroupBy(task => task.DoneDate?.Date)
@@ -97,29 +94,15 @@ namespace ProductivityKeeperWeb.Domain.Utils
             foreach (DateTime? date in grouppedByDoneDate.Keys)
             {
                 int doneThatDay = grouppedByDoneDate[date].Count();
-                perDayStatistic.Add(new DonePerDay { Date = date.Value, CountOfDone = doneThatDay });
+                statistic.PerDayStatistic.Add(new DonePerDay { Date = date.Value, CountOfDone = doneThatDay });
             }
 
-            // union
-
-            if (!perDayStat.Any())
-            {
-                perDayStat = perDayStatistic;
-                return;
-            }
-
-            foreach (DonePerDay archivedSts in perDayStatistic)
-            {
-                DonePerDay existingMatch = perDayStat.FirstOrDefault(s => s.Date == archivedSts.Date);
-                if (existingMatch != null)
+            statistic.PerDayStatistic = statistic.PerDayStatistic.GroupBy(stat => stat.Date.Date)
+                .Select(x => new DonePerDay
                 {
-                    existingMatch.CountOfDone = archivedSts.CountOfDone + existingMatch.CountOfDone; //total
-                }
-                else
-                {
-                    perDayStat.Add(archivedSts);
-                }
-            }
+                    Date = x.First().Date,
+                    CountOfDone = x.Sum(y => y.CountOfDone)
+                }).ToList();
         }
 
         private static void UnionWithArchivedTasks(UserStatistic statistic, Unit unit)

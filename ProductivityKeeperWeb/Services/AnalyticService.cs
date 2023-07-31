@@ -80,7 +80,9 @@ namespace ProductivityKeeperWeb.Services
                 statistic.PerDayStatistic.Add(new DonePerDay { Date = DateTime.Now.Date, CountOfDone = 0 });
             }
 
-            await _chartHubContext.Clients.User(unit.UserId)
+            statistic.PerDayStatistic.ForEach(pds => pds.Statistic = null);
+
+            _chartHubContext.Clients.Client(ChartHub.UnitConnectionsToUnits[unit.UserId])
                 .SendAsync("StatisticUpdated", statistic);
 
             return statistic;
