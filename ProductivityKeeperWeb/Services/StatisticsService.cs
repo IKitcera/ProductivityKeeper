@@ -11,14 +11,14 @@ using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb.Services
 {
-    public class AnalyticService : IAnalytics
+    public class StatisticsService : IStatistics
     {
         private readonly ITasksReadService _taskReadService;
         private readonly ITasksWriteService _taskWriteService;
         private readonly ApplicationContext _app; //TODO:REMOVE after
         private readonly IHubContext<ChartHub> _chartHubContext;
 
-        public AnalyticService(
+        public StatisticsService(
             ITasksReadService taskReadService,
             ITasksWriteService taskWriteService,
             IHubContext<ChartHub> chartHubContext,
@@ -69,7 +69,7 @@ namespace ProductivityKeeperWeb.Services
                 }
             }
 
-            AnalysisUtil.CountStatistic(unit, statistic);
+            StatisticsUtil.CountStatistic(unit, statistic);
 
             statistic = await _taskWriteService.UpdateUserStatistic(statistic);
 

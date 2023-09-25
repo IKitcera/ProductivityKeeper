@@ -22,6 +22,7 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
         // TaskItem
         Task<TaskItem> AddTaskItem(TaskItem task);
         Task<TaskItem> UpdateTaskItem(TaskItem task);
+        Task ReorderTasks(IEnumerable<int> ids);
         Task<TaskItem> ChangeTaskStatus(int taskId);
         Task DeleteTaskItem(int taskId);
 

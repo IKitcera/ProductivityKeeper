@@ -11,8 +11,8 @@ namespace ProductivityKeeperWeb.Controllers
     [Authorize]
     public class AnalyticsController : ControllerBase
     {
-        private readonly IAnalytics _analytic;
-        public AnalyticsController(IAnalytics analytic)
+        private readonly IStatistics _analytic;
+        public AnalyticsController(IStatistics analytic)
         {
             _analytic = analytic;
         }

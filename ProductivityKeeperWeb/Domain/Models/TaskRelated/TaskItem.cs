@@ -10,8 +10,8 @@ namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
         public int Id { get; set; }
         public string Text { get; set; }
         public bool IsChecked { get; set; }
-        // NOT used for now
         public int Position { get; set; } = 0;
+        public float? ExecutionDuration { get; set; }
 
         public DateTime? Deadline { get; set; }
         public DateTime? DoneDate { get; set; }

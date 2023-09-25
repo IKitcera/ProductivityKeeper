@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb.Domain.Interfaces
 {
-    public interface IAnalytics
+    public interface IStatistics
     {
         Task<UserStatistic> GetStatistic();
         Task<UserStatistic> CountStatistic(int? unitId = null);

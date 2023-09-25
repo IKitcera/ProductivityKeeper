@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using ProductivityKeeperWeb.Domain.Interfaces;
-using ProductivityKeeperWeb.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -27,7 +24,7 @@ namespace ProductivityKeeperWeb.Hubs
             if (UnitConnectionsToUnits.ContainsKey(Context.User.Identity.Name))
             {
                 UnitConnectionsToUnits[Context.User.Identity.Name] = Context.ConnectionId;
-            } 
+            }
             else
             {
                 UnitConnectionsToUnits.Add(Context.User.Identity.Name, Context.ConnectionId);

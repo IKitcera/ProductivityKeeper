@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ProductivityKeeperWeb.Domain.Utils
 {
-    public class AnalysisUtil
+    public class StatisticsUtil
     {
         public static UserStatistic CountStatistic(Unit unit, UserStatistic statistic)
         {

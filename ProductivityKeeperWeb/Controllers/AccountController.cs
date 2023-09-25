@@ -23,10 +23,12 @@ namespace ProductivityKeeperWeb.Controllers
         private readonly ApplicationContext _context;
         // TODO: Remove because move to authservice
         private readonly ITasksWriteService _tasksWriteService;
-        public AccountController(ApplicationContext context, ITasksWriteService tasksWriteService)
+        private readonly ITasksReadService _tasksReadService;
+        public AccountController(ApplicationContext context, ITasksWriteService tasksWriteService, ITasksReadService tasksReadService)
         {
             _context = context;
             _tasksWriteService = tasksWriteService;
+            _tasksReadService = tasksReadService;
         }
 
         [HttpPost("/token")]
@@ -95,17 +97,19 @@ namespace ProductivityKeeperWeb.Controllers
             return Ok();
         }
 
-
         [Authorize]
         [HttpPost("/refresh-token")]
         public async Task<ActionResult<object>> RefreshToken()
         {
             var now = DateTime.UtcNow;
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
+            var unitId = await _tasksReadService.GetUnitId(user.Email);
+
             var claims = new System.Collections.Generic.List<Claim>
                 {
                     new Claim(ClaimsIdentity.DefaultNameClaimType, user.Email),
-                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.ToString())
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.ToString()),
+                    new Claim(Constants.UnitIdClaim, unitId.ToString())
                 };
             ClaimsIdentity claimsIdentity =
             new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,

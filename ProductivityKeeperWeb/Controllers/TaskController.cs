@@ -34,7 +34,6 @@ namespace ProductivityKeeperWeb.Controllers
             return sub.Tasks;
         }
 
-        // GET: api/Categorys/5
         [HttpGet("{id}")]
         public async Task<ActionResult<TaskItem>> GetTask(int id)
         {
@@ -49,8 +48,6 @@ namespace ProductivityKeeperWeb.Controllers
             return res;
         }
 
-        // PUT: api/Categorys/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<ActionResult<TaskItem>> PutTask(int id, TaskItem task)
         {
@@ -75,15 +72,12 @@ namespace ProductivityKeeperWeb.Controllers
             return await _taskWriteService.ChangeTaskStatus(taskId);
         }
 
-        // POST: api/Categorys
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<TaskItem>> PostTask(TaskItem task)
         {
             return await _taskWriteService.AddTaskItem(task);
         }
 
-        // DELETE: api/Categorys/5
         [HttpDelete("{taskId}")]
         public async Task<IActionResult> DeleteTask(int taskId)
         {
@@ -91,11 +85,11 @@ namespace ProductivityKeeperWeb.Controllers
             return Ok();
         }
 
-        //[HttpPost("/changeStatus")]
-        //public async Task<IActionResult> ChangeStatus(int categoryId, int subcategoryId, int taskId)
-        //{
-        //    await helper.ChangeStatus(categoryId, subcategoryId, taskId);
-        //    return Ok();
-        //}
+        [HttpPost("reorder")]
+        public async Task<IActionResult> ReorderTasks([FromBody] IEnumerable<int> ids)
+        {
+            await _taskWriteService.ReorderTasks(ids);
+            return Ok();
+        }
     }
 }

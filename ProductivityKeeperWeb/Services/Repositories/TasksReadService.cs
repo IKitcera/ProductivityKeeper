@@ -23,6 +23,14 @@ namespace ProductivityKeeperWeb.Services.Repositories
             _authService = authService;
         }
 
+        public async Task<int> GetUnitId(string email)
+        {
+            return await _context.Units.AsNoTracking()
+                .Where(unit => unit.UserId == email)
+                .Select(unit => unit.Id)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<Unit> GetUnit(int? unitId = null)
         {
             unitId ??= _authService.GetUnitId();
@@ -142,21 +150,5 @@ namespace ProductivityKeeperWeb.Services.Repositories
 
             return res;
         }
-
-
-        //public async Task<TaskItem> GetTasks(int taskId)
-        //{
-        //    return await _context.Tasks.AsNoTracking()
-        //        .Include(t => t.Subcategories).ThenInclude(s => s.Category)
-        //        .SingleOrDefaultAsync(x => x.Id == taskId);
-        //}
-
-        //public async Task<IEnumerable<TaskItem>> GetConnectedTasks()
-        //{
-        //    return await _context.Tasks.AsNoTracking()
-        //        .Include(t => t.Subcategories)
-        //        .Where(t => t.Subcategories.Count > 1)
-        //        .ToListAsync();
-        //}
     }
 }

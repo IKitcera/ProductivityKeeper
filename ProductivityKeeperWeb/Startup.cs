@@ -21,10 +21,12 @@ namespace ProductivityKeeperWeb
 {
     public class Startup
     {
-        const string host = "http://localhost4200";
+        string AllowedClient = string.Empty;
+        string Policy = "Single";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            AllowedClient = Configuration.GetValue<string>("AllowedClients");
         }
 
         public IConfiguration Configuration { get; }
@@ -34,9 +36,9 @@ namespace ProductivityKeeperWeb
         {
             services.AddCors(options =>
                         {
-                            options.AddPolicy(host,
+                            options.AddPolicy(Policy,
                                 builder => builder
-                                .WithOrigins(host, "http://localhost:51729")
+                                .WithOrigins(AllowedClient)
                                 .AllowAnyHeader()
                                 .AllowAnyMethod()
                                 .AllowCredentials()
@@ -155,7 +157,7 @@ namespace ProductivityKeeperWeb
             services.AddScoped<ITasksWriteService, TasksWriteService>();
             services.AddScoped<IAuthService, AuthService>();
 
-            services.AddScoped<IAnalytics, AnalyticService>();
+            services.AddScoped<IStatistics, StatisticsService>();
             services.AddScoped<ITimerService, TimerService>();
 
         }
@@ -175,7 +177,7 @@ namespace ProductivityKeeperWeb
             }
 
 
-            app.UseCors(host);
+            app.UseCors(Policy);
 
             app.UseHttpsRedirection();
 

@@ -142,6 +142,21 @@ namespace ProductivityKeeperWeb.Services.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task ReorderTasks(IEnumerable<int> ids)
+        {
+            var targetTasks = await _context.Tasks
+               .Where(task => ids.Contains(task.Id))
+               .ToListAsync();
+
+            for (int i = 0; i < ids.Count(); i++)
+            {
+                var match = targetTasks.First(x => x.Id == ids.ElementAt(i));
+                match.Position = i;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task DeleteSubcategory(int subcategoryId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -213,6 +228,7 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 item.Text = task.Text;
                 item.Deadline = task.Deadline?.ToLocalTime();
                 item.DoneDate = task.IsChecked ? DateTime.Now : null;
+                item.ExecutionDuration = task.ExecutionDuration;
                 item.IsChecked = task.IsChecked;
 
                 item.Subcategories = await _context.Subcategories
@@ -263,7 +279,7 @@ namespace ProductivityKeeperWeb.Services.Repositories
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw ex;
+                throw;
             }
         }
 
@@ -294,7 +310,7 @@ namespace ProductivityKeeperWeb.Services.Repositories
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw ex;
+                throw;
             }
         }
 
@@ -331,7 +347,7 @@ namespace ProductivityKeeperWeb.Services.Repositories
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw ex;
+                throw;
             }
         }
 
@@ -375,7 +391,7 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 _context.Entry(unit).State = EntityState.Modified;
 
                 var statToUpdate = await _context.Statistics.FirstOrDefaultAsync(x => x.Id == unit.Statistic.Id);
-                AnalysisUtil.CountStatistic(unit, statToUpdate);
+                StatisticsUtil.CountStatistic(unit, statToUpdate);
 
                 _context.Statistics.Entry(statToUpdate).State = EntityState.Modified;
 
@@ -394,7 +410,7 @@ namespace ProductivityKeeperWeb.Services.Repositories
 
         public string RunBackgroundUpdateStatisticJob(int unitId)
         {
-            return _backgroundJobClient.Enqueue<IAnalytics>(x => x.CountStatistic(unitId));
+            return _backgroundJobClient.Enqueue<IStatistics>(x => x.CountStatistic(unitId));
         }
 
     }
