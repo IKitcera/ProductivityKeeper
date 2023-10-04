@@ -21,7 +21,6 @@ namespace UserTasksProgressPredictionEngine
             DatabaseLoader loader = mlContext.Data.CreateDatabaseLoader<StatisticItem>();
 
             // Data loading
-          //  int userStatisticId = 15;
             string query = $@"SELECT 
                              Date,
                              CAST(CountOfDone as REAL) as CountOfDone,
