@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductivityKeeperWeb", "Pr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLModel_ConsoleApp1", "MLModel_ConsoleApp1\MLModel_ConsoleApp1.csproj", "{885CF865-4F0C-4012-8228-8D8CDBFD4E40}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserTasksProgressPredictionEngine", "UserTasksProgressPredictionEngine\UserTasksProgressPredictionEngine.csproj", "{712666B7-F250-409C-A74B-053C72E35AC7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{885CF865-4F0C-4012-8228-8D8CDBFD4E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{885CF865-4F0C-4012-8228-8D8CDBFD4E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{885CF865-4F0C-4012-8228-8D8CDBFD4E40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{712666B7-F250-409C-A74B-053C72E35AC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{712666B7-F250-409C-A74B-053C72E35AC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{712666B7-F250-409C-A74B-053C72E35AC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{712666B7-F250-409C-A74B-053C72E35AC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
