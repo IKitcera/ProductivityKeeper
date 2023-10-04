@@ -10,7 +10,7 @@ internal class Program
         string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=prodKeepDb;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         var pe = new StatisticPredictionEngine();
 
-        var predications = pe.Predict(connectionString, 16, 7);
+        var predications = pe.Predict(connectionString, 15, 7);
 
         Console.WriteLine("Count of done Forecast");
         Console.WriteLine("---------------------");
