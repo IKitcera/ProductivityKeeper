@@ -57,8 +57,8 @@ namespace UserTasksProgressPredictionEngine
                 outputColumnName: "PredictedCountOfDones",
                 inputColumnName: "CountOfDone",
                 windowSize: 7,
-                seriesLength: 50,
-                trainSize: 50,
+                seriesLength: (int)trainRowsCount,
+                trainSize: (int)trainRowsCount,
                 horizon,
                 confidenceLevel: 0.95f);
 
