@@ -2,7 +2,7 @@
 
 namespace UserTasksProgressPredictionEngine.Models
 {
-    internal class StatisticItem
+    public class StatisticItem
     {
 
         [ColumnName(@"Date")]

@@ -22,8 +22,8 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
         Task<TaskItem> GetTask(int taskId);
         Task<List<Tag>> GetTags();
 
-        //  Task<IEnumerable<TaskItem>> GetTasks(int taskId);
-
+        Task<int> GetStatisticID();
         Task<UserStatistic> GetStatistic();
+        Task<IEnumerable<DonePerDay>> GetPerDayStatistic();
     }
 }

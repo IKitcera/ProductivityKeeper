@@ -125,12 +125,29 @@ namespace ProductivityKeeperWeb.Services.Repositories
                .ToListAsync();
         }
 
+        // MOVE out ?
         public Task<UserStatistic> GetStatistic()
         {
             return _context.Statistics.AsNoTracking()
                 .Include(s => s.PerDayStatistic)
                 .Where(s => s.UnitId == _authService.GetUnitId())
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<int> GetStatisticID()
+        {
+            var unitID = _authService.GetUnitId();
+
+            var res = await _context.Statistics.AsNoTracking()
+                .FirstOrDefaultAsync(s => s.UnitId == unitID);
+
+            return res.Id;
+        }
+
+        public async Task<IEnumerable<DonePerDay>> GetPerDayStatistic()
+        {
+            return await _context.DonePerDays.AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<List<Tag>> GetTags()

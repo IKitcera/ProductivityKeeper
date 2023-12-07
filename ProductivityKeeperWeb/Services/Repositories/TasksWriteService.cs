@@ -365,7 +365,7 @@ namespace ProductivityKeeperWeb.Services.Repositories
             item.PercentOfDoneTotal = statistic.PercentOfDoneTotal;
             item.PerDayStatistic = statistic.PerDayStatistic;
 
-            _context.Entry(item).State = EntityState.Modified;
+            _context.Statistics.Entry(item).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
 
@@ -388,10 +388,10 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 unit.StatisticId = unit.Statistic.Id;
                 unit.TimerId = unit.Timer.Id;
 
-                _context.Entry(unit).State = EntityState.Modified;
+                _context.Units.Entry(unit).State = EntityState.Modified;
 
                 var statToUpdate = await _context.Statistics.FirstOrDefaultAsync(x => x.Id == unit.Statistic.Id);
-                StatisticsUtil.CountStatistic(unit, statToUpdate);
+                StatisticsUtil.CountBaseStatistic(unit, statToUpdate);
 
                 _context.Statistics.Entry(statToUpdate).State = EntityState.Modified;
 

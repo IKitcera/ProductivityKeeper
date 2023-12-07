@@ -21,7 +21,7 @@ namespace ProductivityKeeperWeb.Services
                     break;
             }
 
-            var error = context.Exception.InnerException?.Message ?? context.Exception.Message + "\n\n" + context.Exception.StackTrace;
+            var error = context.Exception.InnerException?.Message ?? context.Exception.Message;
 
             context.Result = new JsonResult(new { message = error, Status = context.HttpContext.Response.StatusCode });
         }

@@ -1,4 +1,5 @@
-﻿using ProductivityKeeperWeb.Domain.Models;
+﻿using ProductivityKeeperWeb.Domain.DTO;
+using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace ProductivityKeeperWeb.Domain.Utils
 {
     public class StatisticsUtil
     {
-        public static UserStatistic CountStatistic(Unit unit, UserStatistic statistic)
+        public static UserStatistic CountBaseStatistic(Unit unit, UserStatistic statistic)
         {
             //if (unit.Categories.Count == 0 || unit.Categories.SelectMany(c => c.Subcategories).Count() == 0)
             //    return statistic;
@@ -62,6 +63,27 @@ namespace ProductivityKeeperWeb.Domain.Utils
 
             return statistic;
         }
+
+
+        public static AverageStatisticDTO CalculateAverageStatistic(IEnumerable<DonePerDay> perDaysData, int activeUserStatisticId)
+        {
+            var todaySelector = (IEnumerable<DonePerDay> data) =>
+                data.FirstOrDefault(d => d.Date == DateTime.Now.Date)?.CountOfDone ?? 0;
+            var avgSelector = (IEnumerable<DonePerDay> data) =>
+                (float)data.Sum(x => x.CountOfDone) / data.Count();
+
+            var currentUserData = perDaysData.Where(pdd => pdd.StatisticId == activeUserStatisticId);
+            var usersGroupedData = perDaysData.GroupBy(x => x.StatisticId);
+
+            return new AverageStatisticDTO
+            {
+                ActiveUserToday = todaySelector(currentUserData),
+                ActiveUserAverage = avgSelector(currentUserData),
+                TodayUsersStatistic = usersGroupedData.Select(group => todaySelector(group)),
+                AverageUsersStatistic = usersGroupedData.Select(group => avgSelector(group))
+            };
+        }
+
 
         private static List<DonePerDay> CountDonePerDayStatistic(List<TaskItem> allTasks, int statisticId)
         {

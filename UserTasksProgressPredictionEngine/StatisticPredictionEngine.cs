@@ -1,16 +1,16 @@
-﻿using Microsoft.ML.Transforms.TimeSeries;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.ML;
-using Microsoft.Data.SqlClient;
 using Microsoft.ML.Data;
-using UserTasksProgressPredictionEngine.Models;
+using Microsoft.ML.Transforms.TimeSeries;
 using System.Data;
+using UserTasksProgressPredictionEngine.Models;
 
 namespace UserTasksProgressPredictionEngine
 {
     public class StatisticPredictionEngine
     {
         // TODO change on correct returning type
-        public IEnumerable<ForecastedStatisticResult> Predict(string connectionString, int userStatisticId, int horizon)
+        public ForecastedStatisticResult Predict(string connectionString, int userStatisticId, int horizon)
         {
             string rootDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../"));
             string modelPath = Path.Combine(rootDir, "MLModel.zip");
@@ -37,8 +37,9 @@ namespace UserTasksProgressPredictionEngine
 
             IDataView dataView = loader.Load(dbSource);
 
-            var dataLength = mlContext.Data.CreateEnumerable<StatisticItem>(dataView, false).Count();
-            var testFraction = 0.2f;
+            var data = mlContext.Data.CreateEnumerable<StatisticItem>(dataView, false);
+            var dataLength = data.Count();
+            var testFraction = 0.0f;
 
             var trainRowsCount = (long)(dataLength * (1 - testFraction));
 
@@ -71,13 +72,14 @@ namespace UserTasksProgressPredictionEngine
             TimeSeriesPredictionEngine<StatisticItem, StatisticPedictions> forecastEngine = forecaster.CreateTimeSeriesEngine<StatisticItem, StatisticPedictions>(mlContext);
             forecastEngine.CheckPoint(mlContext, modelPath);
 
-            var forecastStr = Forecast(testData, horizon, forecastEngine, mlContext);
+           // var forecast = Forecast(testData, horizon, forecastEngine, mlContext);
+            var forecast = Forecast2(horizon, forecastEngine, mlContext);
 
             // Testing of trained data performance 
 
-            Evaluate(testData, forecaster, mlContext);
+          // Evaluate(testData, forecaster, mlContext);
 
-            return forecastStr;
+            return PrepareResults(data.ToList(), forecast.ToList());
         }
 
         private void Evaluate(IDataView testData, ITransformer model, MLContext mlContext)
@@ -101,22 +103,71 @@ namespace UserTasksProgressPredictionEngine
         }
 
         // TODO change on correct returning type
-        private IEnumerable<ForecastedStatisticResult> Forecast(IDataView testData, int horizon, TimeSeriesPredictionEngine<StatisticItem, StatisticPedictions> forecaster, MLContext mlContext)
+        private IEnumerable<StatisticItemForecast> Forecast(IDataView testData, int horizon, TimeSeriesPredictionEngine<StatisticItem, StatisticPedictions> forecaster, MLContext mlContext)
         {
             StatisticPedictions forecast = forecaster.Predict(horizon);
 
-           return mlContext.Data.CreateEnumerable<StatisticItem>(testData, reuseRowObject: false)
-                .Take(horizon)
-                .Select((StatisticItem input, int index) =>
-                {
-                    return new ForecastedStatisticResult
-                    {
-                        StatisticId = input.StatisticId,
-                        Date = input.Date,
-                        CountOfDone = forecast.PredictedCountOfDones[index],
-                        Actial = input.CountOfDone
-                    };
-                });
+            return mlContext.Data.CreateEnumerable<StatisticItem>(testData, reuseRowObject: false)
+                 .Take(horizon)
+                 .Select((StatisticItem input, int index) =>
+                 {
+                     return new StatisticItemForecast
+                     {
+                         StatisticId = input.StatisticId,
+                         Date = input.Date,
+                         CountOfDone = (int)Math.Round(forecast.PredictedCountOfDones[index]),
+                         Actual = (int)input.CountOfDone
+                     };
+                 });
         }
+
+        private IEnumerable<StatisticItemForecast> Forecast2(int horizon, TimeSeriesPredictionEngine<StatisticItem, StatisticPedictions> forecaster, MLContext mlContext)
+        {
+            StatisticPedictions forecast = forecaster.Predict(horizon);
+
+            return forecast.PredictedCountOfDones.Select(p =>
+                  new StatisticItemForecast
+                  {
+                      CountOfDone = (int)Math.Round(p)
+                  });
+        }
+
+
+        private ForecastedStatisticResult PrepareResults(List<StatisticItem> real, List<StatisticItemForecast> predicted)
+        {
+            real.ForEach(item => item.Date = NormalizeDate(item.Date, real[0].Date, real[real.Count - 1].Date));
+
+            var step = (real[real.Count - 1].Date - real[real.Count - 2].Date).TotalMilliseconds;
+
+            var i = 1;
+
+            predicted.ForEach(item =>
+            {
+                item.Date = real[real.Count - 1].Date.AddMilliseconds(step * i);
+                item.StatisticId = real[real.Count - 1].StatisticId;
+                item.CountOfDone = item.CountOfDone < 0 ? 0 : item.CountOfDone;
+                i++;
+            });
+
+            return new ForecastedStatisticResult
+            {
+                StoredItems = real,
+                ForecastedItems = predicted
+            };
+        }
+
+        // Function to normalize a date
+        private DateTime NormalizeDate(DateTime originalDate, DateTime minDate, DateTime maxDate)
+        {
+            // Ensure maxDate is not equal to minDate to avoid division by zero
+            maxDate = maxDate == minDate ? maxDate.AddDays(1) : maxDate;
+
+            // Normalize the date
+            double normalizedValue = (originalDate - minDate).TotalMilliseconds / (maxDate - minDate).TotalMilliseconds;
+
+            // Convert the normalized value back to DateTime
+            return minDate.AddMilliseconds(normalizedValue * (maxDate - minDate).TotalMilliseconds);
+        }
+
     }
 }

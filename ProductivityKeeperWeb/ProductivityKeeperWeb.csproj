@@ -24,16 +24,7 @@
   <ItemGroup>
     <Folder Include="Migrations\" />
   </ItemGroup>
-  <ItemGroup Label="MLModel">
-    <None Include="MLModel.consumption.cs">
-      <DependentUpon>MLModel.mbconfig</DependentUpon>
-    </None>
-    <None Include="MLModel.training.cs">
-      <DependentUpon>MLModel.mbconfig</DependentUpon>
-    </None>
-    <None Include="MLModel.zip">
-      <DependentUpon>MLModel.mbconfig</DependentUpon>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+  <ItemGroup>
+    <ProjectReference Include="..\UserTasksProgressPredictionEngine\UserTasksProgressPredictionEngine.csproj" />
   </ItemGroup>
 </Project>

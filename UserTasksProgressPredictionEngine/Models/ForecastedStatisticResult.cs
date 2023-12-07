@@ -2,10 +2,7 @@
 {
     public class ForecastedStatisticResult
     {
-        public int StatisticId { get; set; }
-        public float CountOfDone { get; set; }
-        public DateTime Date { get; set; }
-        // TODO: delete after testing
-        public float Actial { get; set; }
+        public IEnumerable<StatisticItem> StoredItems { get; set; }
+        public IEnumerable<StatisticItemForecast> ForecastedItems { get; set; }
     }
 }
