@@ -255,10 +255,8 @@ namespace ProductivityKeeperWeb.Services.Repositories
 
                 if (task.IsRepeatable)
                 {
-                    var completed = item.GoalRepeatCount - item.TimesToRepeat;
-
                     item.GoalRepeatCount = task.GoalRepeatCount;
-                    item.TimesToRepeat = completed > 0 ? task.GoalRepeatCount - completed : task.GoalRepeatCount;
+                    item.TimesToRepeat = task.TimesToRepeat;
                     item.HabbitIntervalInHours = task.HabbitIntervalInHours;
                 }
                 else
