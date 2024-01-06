@@ -11,10 +11,6 @@ namespace ProductivityKeeperWeb.Domain.Utils
     {
         public static UserStatistic CountBaseStatistic(Unit unit, UserStatistic statistic)
         {
-            //if (unit.Categories.Count == 0 || unit.Categories.SelectMany(c => c.Subcategories).Count() == 0)
-            //    return statistic;
-
-
             List<TaskItem> AllTasks = unit.Categories
                     .SelectMany(ctg => ctg.Subcategories
                     .SelectMany(sub => sub.Tasks))
