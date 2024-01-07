@@ -10,7 +10,7 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
     public interface ITasksReadService
     {
         Task<int> GetUnitId(string email);
-        Task<Unit> GetUnit(int? unitId = null);
+        Task<Unit> GetUnit(int? unitId = null, bool includeStat = true);
         Task<Unit> GetUnitBrief();
 
         Task<Category> GetCategory(int categoryId);

@@ -36,7 +36,7 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpGet("Categories")]
         public async Task<ActionResult<IEnumerable<Category>>> GetJustCategories(int unitId)
         {
-            Unit unit = await _taskReadService.GetUnit();
+            Unit unit = await _taskReadService.GetUnit(null, false);
             return unit == null ? (ActionResult<IEnumerable<Category>>)Unauthorized() : (ActionResult<IEnumerable<Category>>)unit.Categories;
         }
 

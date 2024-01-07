@@ -8,6 +8,7 @@ using ProductivityKeeperWeb.Domain.Utils;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 
 namespace ProductivityKeeperWeb.Services.Repositories
 {
@@ -31,15 +32,24 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Unit> GetUnit(int? unitId = null)
+        public async Task<Unit> GetUnit(int? unitId = null, bool includeStat = true)
         {
             unitId ??= _authService.GetUnitId();
-            var unit = await _context.Units.AsNoTracking()
+
+            var query = _context.Units.AsNoTracking()
                 .Include(u => u.TaskArchive)
-                .Include(u => u.Statistic).ThenInclude(s => s.PerDayStatistic)
                 .Include(u => u.Categories)
                     .ThenInclude(c => c.Subcategories)
                         .ThenInclude(s => s.Tasks)
+                .AsQueryable();
+
+            if (includeStat)
+            {
+                query = query
+                    .Include(u => u.Statistic).ThenInclude(s => s.PerDayStatistic);
+            }
+                 
+            var unit = await query
                 .FirstOrDefaultAsync(unit => unit.Id == unitId);
 
 
