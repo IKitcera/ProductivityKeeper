@@ -9,7 +9,6 @@ namespace UserTasksProgressPredictionEngine
 {
     public class StatisticPredictionEngine
     {
-        // TODO change on correct returning type
         public ForecastedStatisticResult Predict(string connectionString, int userStatisticId, int horizon)
         {
             string rootDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../"));
@@ -72,12 +71,12 @@ namespace UserTasksProgressPredictionEngine
             TimeSeriesPredictionEngine<StatisticItem, StatisticPedictions> forecastEngine = forecaster.CreateTimeSeriesEngine<StatisticItem, StatisticPedictions>(mlContext);
             forecastEngine.CheckPoint(mlContext, modelPath);
 
-           // var forecast = Forecast(testData, horizon, forecastEngine, mlContext);
-            var forecast = Forecast2(horizon, forecastEngine, mlContext);
+            // var forecast = Forecast(testData, horizon, forecastEngine, mlContext);
+            var forecast = Forecast(horizon, forecastEngine, mlContext);
 
             // Testing of trained data performance 
 
-          // Evaluate(testData, forecaster, mlContext);
+            // Evaluate(testData, forecaster, mlContext);
 
             return PrepareResults(data.ToList(), forecast.ToList());
         }
@@ -103,7 +102,7 @@ namespace UserTasksProgressPredictionEngine
         }
 
         // TODO change on correct returning type
-        private IEnumerable<StatisticItemForecast> Forecast(IDataView testData, int horizon, TimeSeriesPredictionEngine<StatisticItem, StatisticPedictions> forecaster, MLContext mlContext)
+        private IEnumerable<StatisticItemForecast> TestForecast(IDataView testData, int horizon, TimeSeriesPredictionEngine<StatisticItem, StatisticPedictions> forecaster, MLContext mlContext)
         {
             StatisticPedictions forecast = forecaster.Predict(horizon);
 
@@ -121,7 +120,7 @@ namespace UserTasksProgressPredictionEngine
                  });
         }
 
-        private IEnumerable<StatisticItemForecast> Forecast2(int horizon, TimeSeriesPredictionEngine<StatisticItem, StatisticPedictions> forecaster, MLContext mlContext)
+        private IEnumerable<StatisticItemForecast> Forecast(int horizon, TimeSeriesPredictionEngine<StatisticItem, StatisticPedictions> forecaster, MLContext mlContext)
         {
             StatisticPedictions forecast = forecaster.Predict(horizon);
 
@@ -168,6 +167,5 @@ namespace UserTasksProgressPredictionEngine
             // Convert the normalized value back to DateTime
             return minDate.AddMilliseconds(normalizedValue * (maxDate - minDate).TotalMilliseconds);
         }
-
     }
 }
