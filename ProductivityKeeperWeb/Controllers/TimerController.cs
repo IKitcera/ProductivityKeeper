@@ -44,5 +44,11 @@ namespace ProductivityKeeperWeb.Controllers
             await _timerService.UpdateFormat(newFormat);
             return Ok();
         }
+
+        [HttpDelete]
+        public async Task<Timer> DeleteTimer(int timerId)
+        {
+            return await _timerService.SetTimer(new Timer { Id = timerId });
+        }
     }
 }

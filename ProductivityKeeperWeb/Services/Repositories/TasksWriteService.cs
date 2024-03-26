@@ -1,15 +1,19 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.ML;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Domain.Utils;
+using ProductivityKeeperWeb.Migrations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IStatistics = ProductivityKeeperWeb.Domain.Interfaces.IStatistics;
 
 namespace ProductivityKeeperWeb.Services.Repositories
 {
@@ -50,10 +54,14 @@ namespace ProductivityKeeperWeb.Services.Repositories
         public async Task<Category> UpdateCategory(Category category)
         {
             var ctg = await _context.Categories.FindAsync(category.Id);
+
+            // Dangerous place
+            _context.Entry(ctg).State = EntityState.Detached;
+
             ctg.Name = category.Name;
             ctg.ColorHex = category.ColorHex;
             ctg.Subcategories = category.Subcategories;
-
+            
             _context.Entry(ctg).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
@@ -368,6 +376,31 @@ namespace ProductivityKeeperWeb.Services.Repositories
             await _context.SaveChangesAsync();
 
             return item;
+        }
+
+        public async Task<UserStatistic> FillNewStatistic(Unit unit)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var statistic = new UserStatistic { UnitId = unit.Id };
+                var res = await _context.Statistics.AddAsync(statistic);
+                await _context.SaveChangesAsync();
+
+                unit.StatisticId = statistic.Id;
+
+                _context.Units.Entry(unit).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return statistic;
+            }
+            catch (Exception)
+            {
+                // Rollback the transaction in case of any exception
+                await transaction.RollbackAsync();
+                throw; // Rethrow the exception to be handled at a higher level
+            }
         }
 
         public async Task<Unit> AddUnitForNewCommer(string email)

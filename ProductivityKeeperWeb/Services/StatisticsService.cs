@@ -3,7 +3,6 @@ using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain.DTO;
 using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
-using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using ProductivityKeeperWeb.Domain.Utils;
 using ProductivityKeeperWeb.Hubs;
 using System;
@@ -18,7 +17,6 @@ namespace ProductivityKeeperWeb.Services
     {
         private readonly ITasksReadService _taskReadService;
         private readonly ITasksWriteService _taskWriteService;
-        private readonly ApplicationContext _app; //TODO:REMOVE after
         private readonly IHubContext<ChartHub> _chartHubContext;
 
         public StatisticsService(
@@ -30,7 +28,6 @@ namespace ProductivityKeeperWeb.Services
             _taskReadService = taskReadService;
             _taskWriteService = taskWriteService;
             _chartHubContext = chartHubContext;
-            _app = app;
         }
 
         public async Task<UserStatistic> GetStatistic()
@@ -64,30 +61,7 @@ namespace ProductivityKeeperWeb.Services
 
             //TODO: Remove?
 
-            if (statistic == null)
-            {
-                using var transaction = await _app.Database.BeginTransactionAsync();
-
-                try
-                {
-                    statistic = new UserStatistic { UnitId = unit.Id };
-                    var res = await _app.Statistics.AddAsync(statistic);
-
-                    await _app.SaveChangesAsync();
-
-                    unit.StatisticId = statistic.Id;
-
-                    _app.Units.Entry(unit).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                    await _app.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                }
-                catch (Exception)
-                {
-                    // Rollback the transaction in case of any exception
-                    await transaction.RollbackAsync();
-                    throw; // Rethrow the exception to be handled at a higher level
-                }
-            }
+            statistic ??= await _taskWriteService.FillNewStatistic(unit);
 
             StatisticsUtil.CountBaseStatistic(unit, statistic);
 

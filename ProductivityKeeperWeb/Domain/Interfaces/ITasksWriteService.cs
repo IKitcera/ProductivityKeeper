@@ -28,6 +28,7 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
 
         // Statistic
         Task<UserStatistic> UpdateUserStatistic(UserStatistic statistic);
+        Task<UserStatistic> FillNewStatistic(Unit unit);
 
         Task<Unit> AddUnitForNewCommer(string email);
     }

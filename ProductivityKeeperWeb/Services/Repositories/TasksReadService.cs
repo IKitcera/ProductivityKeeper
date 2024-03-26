@@ -32,12 +32,12 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Unit> GetUnit(int? unitId = null, bool includeStat = true)
+        //TODOO: dynamic include
+        public async Task<Unit> GetUnit(int? unitId = null, bool includeStat = true, bool includeArchive = true)
         {
             unitId ??= _authService.GetUnitId();
 
             var query = _context.Units.AsNoTracking()
-                .Include(u => u.TaskArchive)
                 .Include(u => u.Categories)
                     .ThenInclude(c => c.Subcategories)
                         .ThenInclude(s => s.Tasks)
@@ -48,7 +48,12 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 query = query
                     .Include(u => u.Statistic).ThenInclude(s => s.PerDayStatistic);
             }
-                 
+            if (includeArchive)
+            {
+                query = query
+                    .Include(u => u.TaskArchive);
+            }
+
             var unit = await query
                 .FirstOrDefaultAsync(unit => unit.Id == unitId);
 

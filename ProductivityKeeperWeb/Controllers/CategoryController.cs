@@ -29,7 +29,7 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpGet]
         public async Task<ActionResult<Unit>> GetUnit()
         {
-            Unit unit = await _taskReadService.GetUnit();
+            Unit unit = await _taskReadService.GetUnit(null, false, false);
             return unit == null ? (ActionResult<Unit>)BadRequest("Invalid unit id") : (ActionResult<Unit>)Ok(unit);
         }
 
