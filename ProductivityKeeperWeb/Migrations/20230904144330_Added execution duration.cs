@@ -10,27 +10,19 @@ namespace ProductivityKeeperWeb.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<float>(
+            migrationBuilder.AddColumn<float>(
                 name: "ExecutionDuration",
                 table: "Tasks",
                 type: "real",
-                nullable: true,
-                oldClrType: typeof(int),
-                oldType: "int",
-                oldNullable: true);
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
+            migrationBuilder.DropColumn(
                 name: "ExecutionDuration",
-                table: "Tasks",
-                type: "int",
-                nullable: true,
-                oldClrType: typeof(float),
-                oldType: "real",
-                oldNullable: true);
+                table: "Tasks");
         }
     }
 }

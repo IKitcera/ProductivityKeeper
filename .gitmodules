@@ -1,0 +1,3 @@
+[submodule "ProductivityKeeperClient"]
+	path = ProductivityKeeperClient
+	url = https://github.com/IKitcera/ProductivityKeeperClient.git

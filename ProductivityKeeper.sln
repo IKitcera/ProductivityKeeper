@@ -9,25 +9,33 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MLModel_ConsoleApp1", "MLMo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserTasksProgressPredictionEngine", "UserTasksProgressPredictionEngine\UserTasksProgressPredictionEngine.csproj", "{712666B7-F250-409C-A74B-053C72E35AC7}"
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "ProductivityKeeperClient", "ProductivityKeeperClient\", "{6DE0CC2F-7081-40A8-804B-CDA8FBA79C7F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F5320215-ACC6-41C6-9080-67E6BEC31C1A}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		ProductivityKeeperWeb\Dockerfile = ProductivityKeeperWeb\Dockerfile
+		ProductivityKeeperWeb\Dockerfile.original = ProductivityKeeperWeb\Dockerfile.original
+	EndProjectSection
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{9E5293CD-6669-4641-8D3F-217327C0DB2E}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "ProductivityKeeperClient", "..\..\ProductivityKeeper\ProductivityKeeperClient\", "{6DE0CC2F-7081-40A8-804B-CDA8FBA79C7F}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.8"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_65023"
-		Debug.AspNetCompiler.PhysicalPath = "ProductivityKeeperClient\"
+		Debug.AspNetCompiler.PhysicalPath = "..\..\ProductivityKeeper\ProductivityKeeperClient\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_65023\"
 		Debug.AspNetCompiler.Updateable = "true"
 		Debug.AspNetCompiler.ForceOverwrite = "true"
 		Debug.AspNetCompiler.FixedNames = "false"
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.VirtualPath = "/localhost_65023"
-		Release.AspNetCompiler.PhysicalPath = "ProductivityKeeperClient\"
+		Release.AspNetCompiler.PhysicalPath = "..\..\ProductivityKeeper\ProductivityKeeperClient\"
 		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_65023\"
 		Release.AspNetCompiler.Updateable = "true"
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
 		VWDPort = "65023"
-		SlnRelativePath = "ProductivityKeeperClient\"
 	EndProjectSection
 EndProject
 Global
@@ -48,6 +56,10 @@ Global
 		{712666B7-F250-409C-A74B-053C72E35AC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{712666B7-F250-409C-A74B-053C72E35AC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{712666B7-F250-409C-A74B-053C72E35AC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E5293CD-6669-4641-8D3F-217327C0DB2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E5293CD-6669-4641-8D3F-217327C0DB2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E5293CD-6669-4641-8D3F-217327C0DB2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E5293CD-6669-4641-8D3F-217327C0DB2E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6DE0CC2F-7081-40A8-804B-CDA8FBA79C7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6DE0CC2F-7081-40A8-804B-CDA8FBA79C7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DE0CC2F-7081-40A8-804B-CDA8FBA79C7F}.Release|Any CPU.ActiveCfg = Debug|Any CPU
