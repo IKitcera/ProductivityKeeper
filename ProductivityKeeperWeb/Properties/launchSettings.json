@@ -8,29 +8,10 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "ProductivityKeeperWeb-Prod": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Prod",
-        "ASPNETCORE_URLS": "http://productivity-keeper.com"
-      },
-      "applicationUrl": "http://productivity-keeper.com"
-    },
-    "ProductivityKeeperWeb": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "dotnetRunMessages": "true"
-    },
     "WSL": {
       "commandName": "WSL2",
       "launchBrowser": true,
-      "launchUrl": "https://localhost:5001/swagger",
+      "launchUrl": "https://localhost:65070/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_URLS": "https://localhost:5001;http://localhost:5000"
@@ -40,10 +21,11 @@
     "Container (Dockerfile)": {
       "commandName": "Docker",
       "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "launchUrl": "http://localhost:65070/swagger",
       "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
         "ASPNETCORE_HTTPS_PORTS": "44398",
-        "ASPNETCORE_HTTP_PORTS": "8080"
+        "ASPNETCORE_HTTP_PORTS": "65070"
       },
       "publishAllPorts": true,
       "useSSL": true

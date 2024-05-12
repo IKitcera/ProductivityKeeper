@@ -14,7 +14,6 @@ using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Hubs;
 using ProductivityKeeperWeb.Services;
 using ProductivityKeeperWeb.Services.Repositories;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb
@@ -43,16 +42,11 @@ namespace ProductivityKeeperWeb
                                 .AllowAnyMethod()
                                 .AllowCredentials()
                              );
-
-
                         });
             services.AddAuthentication(opt =>
             {
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-
-
             }).AddJwtBearer(options =>
                     {
                         //     options.Authority = host;
@@ -88,9 +82,6 @@ namespace ProductivityKeeperWeb
 
                     });
 
-
-
-
             services.AddMvcCore()
               .AddNewtonsoftJson(opt =>
               {
@@ -119,40 +110,37 @@ namespace ProductivityKeeperWeb
                 options.AllowSynchronousIO = true;
             });
 
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ProductivityKeeperWeb", Version = "v1" });
-
-                // Define the security scheme for JWT authentication
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description = "Using the Authorization header with the Bearer scheme.",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
-                });
-
-                // Add the security requirement for JWT authentication
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header
-                        },
-                        new List<string>()
-                    }
-                });
-            });
-
             services.AddDbContext<ApplicationContext>();
             services.AddHttpContextAccessor();
 
             services.AddControllers();
+
+            services.AddEndpointsApiExplorer();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please insert JWT with Bearer into field",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                   {
+                     new OpenApiSecurityScheme
+                     {
+                       Reference = new OpenApiReference
+                       {
+                         Type = ReferenceType.SecurityScheme,
+                         Id = "Bearer"
+                       }
+                      },
+                      new string[] { }
+                    }
+                  });
+            });
+
             services.AddScoped<ITasksReadService, TasksReadService>();
             services.AddScoped<ITasksWriteService, TasksWriteService>();
             services.AddScoped<IAuthService, AuthService>();
@@ -169,11 +157,7 @@ namespace ProductivityKeeperWeb
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProductivityKeeperWeb v1");
-
-                });
+                app.UseSwaggerUI();
             }
 
 
@@ -191,6 +175,8 @@ namespace ProductivityKeeperWeb
                 endpoints.MapHub<ChartHub>("/chart-hub");
                 endpoints.MapControllers();
             });
+
+            app.UseHangfireDashboard("/hangfire");
         }
     }
 }
