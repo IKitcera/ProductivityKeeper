@@ -2,9 +2,13 @@ using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
@@ -12,8 +16,10 @@ using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Hubs;
+using ProductivityKeeperWeb.Middleware;
 using ProductivityKeeperWeb.Services;
 using ProductivityKeeperWeb.Services.Repositories;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb
@@ -99,8 +105,19 @@ namespace ProductivityKeeperWeb
                 .AddCacheTagHelper()
                 .AddDataAnnotations();
 
-            services.AddHangfire(configuration => configuration.UseSqlServerStorage(
-                Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<ApplicationContext>(optionsBuilder =>
+            {
+                optionsBuilder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                optionsBuilder.EnableSensitiveDataLogging();
+                optionsBuilder.EnableDetailedErrors();
+            });
+
+            ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+
+            services.AddHangfire(configuration => 
+            {
+                configuration.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"));
+            });
             services.AddHangfireServer();
 
             services.AddSignalR();
@@ -110,7 +127,11 @@ namespace ProductivityKeeperWeb
                 options.AllowSynchronousIO = true;
             });
 
-            services.AddDbContext<ApplicationContext>();
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
+
             services.AddHttpContextAccessor();
 
             services.AddControllers();
@@ -158,12 +179,17 @@ namespace ProductivityKeeperWeb
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI();
+
+               
+            }
+            else
+            {
+                //app.UseHsts();
             }
 
+            app.UseHttpsRedirection();
 
             app.UseCors(Policy);
-
-            app.UseHttpsRedirection();
 
             app.UseRouting();
 
@@ -175,7 +201,7 @@ namespace ProductivityKeeperWeb
                 endpoints.MapHub<ChartHub>("/chart-hub");
                 endpoints.MapControllers();
             });
-
+             
             app.UseHangfireDashboard("/hangfire");
         }
     }

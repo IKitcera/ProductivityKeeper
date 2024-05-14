@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain.DTO;
 using ProductivityKeeperWeb.Domain.Interfaces;
@@ -18,16 +19,18 @@ namespace ProductivityKeeperWeb.Services
         private readonly ITasksReadService _taskReadService;
         private readonly ITasksWriteService _taskWriteService;
         private readonly IHubContext<ChartHub> _chartHubContext;
+        private readonly string _connectionString;
 
         public StatisticsService(
             ITasksReadService taskReadService,
             ITasksWriteService taskWriteService,
             IHubContext<ChartHub> chartHubContext,
-            ApplicationContext app)
+            IConfiguration configuration)
         {
             _taskReadService = taskReadService;
             _taskWriteService = taskWriteService;
             _chartHubContext = chartHubContext;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         public async Task<UserStatistic> GetStatistic()
@@ -38,9 +41,6 @@ namespace ProductivityKeeperWeb.Services
 
         public async Task<ForecastedStatisticResult> GetStatisticWithPrediction()
         {
-            //TODO:!!!!!!!!!
-            string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=prodKeepDb;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-
             var stat = await _taskReadService.GetStatistic();
 
             if (stat.PerDayStatistic.Count <= 10)
@@ -49,7 +49,7 @@ namespace ProductivityKeeperWeb.Services
             }
 
             var pe = new StatisticPredictionEngine();
-            var predictionRes = pe.Predict(connectionString, stat.Id, 10);
+            var predictionRes = pe.Predict(_connectionString, stat.Id, 10);
             return predictionRes;
         }
 
@@ -58,8 +58,6 @@ namespace ProductivityKeeperWeb.Services
             var unit = await _taskReadService.GetUnit(unitId);
 
             var statistic = unit.Statistic;
-
-            //TODO: Remove?
 
             statistic ??= await _taskWriteService.FillNewStatistic(unit);
 

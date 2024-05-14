@@ -8,6 +8,21 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    "IIS Express Prod": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:65070",
+      "launchUrl": "/hangfire",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_Kestrel__Certificates__Default__Password": "kitce",
+        "ASPNETCORE_Kestrel__Certificates__Default__Path": "https/aspnetapp.pfx",
+        //"ASPNETCORE_HTTPS_PORTS": "44398",
+        //"ASPNETCORE_HTTP_PORTS": "65070",
+        "ConnectionStrings:DefaultConnection": "Data Source=127.0.0.1,1433;Initial Catalog=prodKeepDb;Integrated Security=False;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;User ID=prodKeepClient;Password=jeweler2020"
+      },
+      "sslPort": 44398,
+    },
     "WSL": {
       "commandName": "WSL2",
       "launchBrowser": true,
@@ -20,16 +35,29 @@
     },
     "Container (Dockerfile)": {
       "commandName": "Docker",
+      "applicationUrl": "http://localhost:65070",
+      "launchUrl": "https://localhost:44398/hangfire",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:65070/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production",
+        "ASPNETCORE_Kestrel__Certificates__Default__Password": "kitce",
+        "ASPNETCORE_Kestrel__Certificates__Default__Path": "https/aspnetapp.pfx",
         "ASPNETCORE_HTTPS_PORTS": "44398",
         "ASPNETCORE_HTTP_PORTS": "65070"
-      },
-      "publishAllPorts": true,
+       },
       "useSSL": true
-    }
+    },
+    //"Container (Dockerfile)": {
+    //  "commandName": "Docker",
+    //  "applicationUrl": "http://localhost:65070",
+    //  "sslPort": 44398,
+    //  "launchBrowser": true,
+    //  "launchUrl": "swagger",
+    //  "environmentVariables": {
+    //    "ASPNETCORE_ENVIRONMENT": "Development",
+    //    "ConnectionStrings:DefaultConnection": "Server=192.168.31.179,1433;Initial Catalog=prodKeepDb;Integrated Security=False;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;User ID=prodKeepClient;Password=jeweler2020"
+    //  }
+    //}
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "iisSettings": {

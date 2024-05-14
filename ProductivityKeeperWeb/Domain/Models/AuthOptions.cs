@@ -4,32 +4,56 @@
     {
         public const string ISSUER = "http://localhost:65070"; // издатель токена
         public const string AUDIENCE = "http://localhost:65070"; // потребитель токена
-        const string KEY = "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC7VJTUt9Us8cKj" +
-            "MzEfYyjiWA4R4/M2bS1GB4t7NXp98C3SC6dVMvDuictGeurT8jNbvJZHtCSuYEvu" +
-            "NMoSfm76oqFvAp8Gy0iz5sxjZmSnXyCdPEovGhLa0VzMaQ8s+CLOyS56YyCFGeJZ" +
-            "qgtzJ6GR3eqoYSW9b9UMvkBpZODSctWSNGj3P7jRFDO5VoTwCQAWbFnOjDfH5Ulg" +
-            "p2PKSQnSJP3AJLQNFNe7br1XbrhV//eO+t51mIpGSDCUv3E0DDFcWDTH9cXDTTlR" +
-            "ZVEiR2BwpZOOkE/Z0/BVnhZYL71oZV34bKfWjQIt6V/isSMahdsAASACp4ZTGtwi" +
-            "VuNd9tybAgMBAAECggEBAKTmjaS6tkK8BlPXClTQ2vpz/N6uxDeS35mXpqasqskV" +
-            "laAidgg/sWqpjXDbXr93otIMLlWsM+X0CqMDgSXKejLS2jx4GDjI1ZTXg++0AMJ8" +
-            "sJ74pWzVDOfmCEQ/7wXs3+cbnXhKriO8Z036q92Qc1+N87SI38nkGa0ABH9CN83H" +
-            "mQqt4fB7UdHzuIRe/me2PGhIq5ZBzj6h3BpoPGzEP+x3l9YmK8t/1cN0pqI+dQwY" +
-            "dgfGjackLu/2qH80MCF7IyQaseZUOJyKrCLtSD/Iixv/hzDEUPfOCjFDgTpzf3cw" +
-            "ta8+oE4wHCo1iI1/4TlPkwmXx4qSXtmw4aQPz7IDQvECgYEA8KNThCO2gsC2I9PQ" +
-            "DM/8Cw0O983WCDY+oi+7JPiNAJwv5DYBqEZB1QYdj06YD16XlC/HAZMsMku1na2T" +
-            "N0driwenQQWzoev3g2S7gRDoS/FCJSI3jJ+kjgtaA7Qmzlgk1TxODN+G1H91HW7t" +
-            "0l7VnL27IWyYo2qRRK3jzxqUiPUCgYEAx0oQs2reBQGMVZnApD1jeq7n4MvNLcPv" +
-            "t8b/eU9iUv6Y4Mj0Suo/AU8lYZXm8ubbqAlwz2VSVunD2tOplHyMUrtCtObAfVDU" +
-            "AhCndKaA9gApgfb3xw1IKbuQ1u4IF1FJl3VtumfQn//LiH1B3rXhcdyo3/vIttEk" +
-            "48RakUKClU8CgYEAzV7W3COOlDDcQd935DdtKBFRAPRPAlspQUnzMi5eSHMD/ISL" +
-            "DY5IiQHbIH83D4bvXq0X7qQoSBSNP7Dvv3HYuqMhf0DaegrlBuJllFVVq9qPVRnK" +
-            "xt1Il2HgxOBvbhOT+9in1BzA+YJ99UzC85O0Qz06A+CmtHEy4aZ2kj5hHjECgYEA" +
-            "mNS4+A8Fkss8Js1RieK2LniBxMgmYml3pfVLKGnzmng7H2+cwPLhPIzIuwytXywh" +
-            "2bzbsYEfYx3EoEVgMEpPhoarQnYPukrJO4gwE2o5Te6T5mJSZGlQJQj9q4ZB2Dfz" +
-            "et6INsK0oG8XVGXSpQvQh3RUYekCZQkBBFcpqWpbIEsCgYAnM3DQf3FJoSnXaMhr" +
-            "VBIovic5l0xFkEHskAjFTevO86Fsz1C2aSeRKSqGFoOQ0tmJzBEs1R6KqnHInicD" +
-            "TQrKhArgLXX4v3CddjfTRJkFWDbE/CkvKZNOrcf1nhaGCPspRJj2KUkj1Fhl9Cnc" +
-            "dn/RsYEONbwQSjIfMPkvxF+8HQ==";   // ключ для шифрации
+        const string KEY = "MIIJQgIBADANBgkqhkiG9w0BAQEFAASCCSwwggkoAgEAAoICAQDRs5EzYQIb0GFs" +
+            "zWr85208ZYdAZ6H97rc6pjg9Lm0MmmZDzfPAuKXKxW25cDnHtAO42P6lcY5VyOXp" +
+"dlkB0N3sqYchoL9MRoIvkxeJUWgxFA5afJalUZcwSaVVSleKj9Hy27A78Zpn4QAJ" +
+"y+0qHVVqRNjh8SNPN5O3SnT1DqGR/RUhu9x93hLxXQXNp7HWh1ZvbiAZt4OrhPK" +
+"c7AgJ8OYvs8KlrvNQBHEQGLnn3QPGjWOH3geucGmjxWRYN0yoxg5oOauapEy9B5s" +
+"aSmMet8O93nZhbdPESPv+gMQ/CLisZiBPvMM6cQpNHBw39tIKbf11RBPW60fGi4N" +
+"Zh8IyfgioKrEvFPfWBY6p0wEZ3tFfZ1Z13MP/4O0vYJRVwPVpXmR8HbeixsSy80M" +
+"igoGJmFQhp86PSK1z6c7HhL/pOz5SWCy1HtpA48GUXcdZZ1s2eAqQNqGrOHDEFSo" +
+"5F/ZhH3XsY764z+ec3DqYbKtiE2UAu1raZNzh+2Sc9CnXTaal4rAF8MVHsyupUDi" +
+"YW+LXeA6EgnHOes+Xf2d9hgFL5IeIdLiRQEgduLVxAs1xRNwtBUqHhytuakMOupD" +
+"mfdGKp1/UCLgWJglGxp7Akb3upRb1vuH+FuxftYflHHY/npSygD3cO8sovoT2hIJ" +
+"xvui0JjHrUlOG7+F+HnTqShIuITVbwIDAQABAoICACtmUgFDrPeLr3Ygp2lTDjkH" +
+"PDA4on6W9qX1O8NxxdDrbYnP6Ig0zt9B7/0GfHbXy0No6X7dGxum+epQ+4fULfHq" +
+"fhSYG69SEmR9OUxKpFkv8O6KRXVOhw9P1p9pxOdg748nJ3iofo/MMcFGPMvTZ4FE" +
+"fkZFlYizlcDVpe/4xun+n1MVIB5CnMt1wJqDS+YvQM7PZI1yfLemEGOAgO2OvTzy" +
+"FJB49MI8ZdDrkGymhBMSFg5ldetJ/4mUqF6PoQf3WC6pHcTwOj/E5T0DoL05usty" +
+"rW227mK3RexHHnZX8HJhVhI9sHi2MspiV3kM42mydKe0om0CKLi8ptZQEdE0V52W" +
+"4L/jWCrC/KtfpB465wGIUImKTYp2TtGhXKGQAaEl+BcfMq334nc2Oo3XJAL+Va2d" +
+"ikGLWbNGrTIbhTVVyYhLTZEGKCTyp6heUMoyBzdEa/3wYRSMj2jBPu8rM2FlZYhq" +
+"Hfh01/ZwDP4WSh2F6Ha708KShZc5SM3UbNyYRZ5A9t7+vqN5S2pd+oIRQ2H46qrv" +
+"vv/RnmRH0NXqB7M0nUsBFvgQI7NFY9xcf44erjw9qTI0YRBxZd20Cq+fWWtFWuIb" +
+"gtf6/4h5rZNrxUGhfHjWGqETfEyhQdGzBdV3LC+oxDIQnAypoi4N+8MViTd4YIco" +
+"S06tpAIkngBqX1FF+vaZAoIBAQD5Phw1V76S4DZU2ZkzVxWlkF2JqsumvOJNNfnU" +
+"LEs2ywximIW9ijTDah4+D4BeM4lU0Lc/AldMbzkGCYkrikSi9fg5CeA6i4a1oudo" +
+"frmihks4OaRTasaj4KQZ+gPd4Jmb429xMMRNaU7IE2zsJ73MQuQFng8Xo9+Za9OJ" +
+"y/J4mldiWse75F7b5jb1jmo9KbdB3Bw9BlzISiRSXiNWgiNDpU5OKCKI54VbBEVG" +
+"rASIntMpUqS+U32755x02Ii708nESRTjqMszhfxuzSE8olMOqrq4V7buACrr6S2k" +
+"+aaULMZuvfDWp42Zv5mPLcGthRLpz0ImGQBm+QAv+woiiFvnAoIBAQDXYwSc1xNz" +
+"o1klbqMNUA091BUnm5PM7rkk0ylccr/rgGt28K4VtErWuTQUle4aOyks/wa0RGNg" +
+"AAWg9Cp/CA0p5ajmJPNJXZWiqI4ApEH1hb80b2DoXK3M4LnnnTWomOyEXCO+reZL" +
+"OP1Q27gomaylp+hBw9CNZC+4aq2Vj9kKiw4vk9dF4Y05WLSxZNt59PWA+V3H4cc9" +
+"7xW9tEp/00dBAPdJn/SwYiBgzK6Ze1OsTHNyA6u3OIuLR9odM5plqMsVb19xW6lE" +
+"Pe0WWwl8ReyJLDXz0qO0qPEMAnb0a0gv+wmmbu2bvkE01y3hCK6NbHFDb1h3kUEv" +
+"USY18UdIAMk5AoIBAQDKYJJLBeoqHIBBOUZaF5XuD2DEDbi6tJgUFYW7sBOKdCik" +
+"TjAaDQR2v826mp+i3bne8nI4aVA1MgJdUpTck7LTl2Fr/wbgwrYo+hNoF63nt5+Q" +
+"Ec3KJeMQ4bCdnxJQsLRJjczJXc2nBaEAeDVzM3m7R30aypJ6oYdHbfQf6UgCgV/+" +
+"7rNLb01OxIlPrcm5zAuPIIiVTHs97mW7s9CBx72Wib0hXRldjJANrVQK5FXyEPRo" +
+"k0BNgkGPt6qkfcXYrUkhZi3eBQqp1Vt5JHqeXzeNqzddw2s3qU8wqu9zC3skyY5+" +
+"ESBjSz2A38ByL7cZi/olezK8+IQJGJn8W5yJGat1AoIBAGmv3q2PI65UcwPZHA0G" +
+"QNkb3h2HS6j9Yr/dFaiVbfMDGrhMNT/VLfva+OE5CJK6gOPhZ8rA2/pZSGnIJaob" +
+"q0nptUzoyLAxSaF9D+DkuLDfJgl2tZiPEYE8rDwoehH2p+fyxl9kOWKj3jj095KE" +
+"haDrmR3cFdOrW3ckcXS4FwoDXbye0L0rhf6jtlZtZPyc5HKa6heQhBGx5Xsmon/C" +
+"jm4pKS5pXMnH/JdDGFGboF0lTmidwH6xMlfvs+ksTxCfGLe15KFdFtuzf0i+9xKR" +
+"xRUyKm8v5sBZPZ5k/zXEBrH0frG6MMGBQ8HH7G1Fs1EV6yXp1wEkt1Wefh9t+0or" +
+"iJECggEAPrm6evDNsRgMrRoAvat43de62WjeccZzp2AW2ZmbMAoHTyeSonMKNebc" +
+"uExrhua/KVJij1rVR0v+9GPCyHhjTExz/daBAsPDeNZu9lDJjbJvNePhsIZdxNHu" +
+"y0Kz/9cd/U2WrXvvJkvICm0B67zgqvOjAaZMqN9RQu0JvOGN7DyGCCK+oypo0fkU" +
+"wD2lVrQaoySYUGdhWqImVfiMGZ3+EaLh4gF9avY2jFgRenJUbnUSuC46qvEzXF/m" +
+"aVLsbO460StHDPWtIgPk9bZ/f38R2TeKvukK3G+asAfbf/Yfn8uZsbWrHDZK3bng" +
+"KezGXU4nicAY5oguH0sFFSEM4Ul8JA==";   // ключ для шифрации
         public const int LIFETIME = 60; // время жизни токена - 1 минута
         public static Microsoft.IdentityModel.Tokens.SymmetricSecurityKey GetSymmetricSecurityKey()
         {
