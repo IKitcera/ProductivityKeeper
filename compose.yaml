@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   productivitykeeperweb:
@@ -8,39 +8,26 @@ services:
     restart: always
     ports:
       - '65070:80'
-      - '44398:443'
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ASPNETCORE_HTTPS_PORTS": 44398
-      ASPNETCORE_HTTP_PORTS": 65070
+      ASPNETCORE_HTTPS_PORTS": 443
+      ASPNETCORE_HTTP_PORTS": 80
       ASPNETCORE_Kestrel__Certificates__Default__Password: kitce
       ASPNETCORE_Kestrel__Certificates__Default__Path: ./ProductivityKeeperWeb/aspnetapp.pfx
     command: ["dotnet", "ProductivityKeeperWeb.dll"]
     volumes:
       - ./ProductivityKeeperWeb:/app/ProductivityKeeperWeb
 
-  # productivitykeeperclient:
-  #   build:
-  #     context: ./ProductivityKeeperClient
-  #     dockerfile: Dockerfile  # Assuming the Dockerfile is in the frontend project directory
-  #   ports:
-  #     - '4201:4201'
-  #   environment:
-  #     NODE_ENV: "production"
-  #   volumes:
-  #     - ./ProductivityKeeperClient:/app/ProductivityKeeperClient 
-
-  # https-portal:
-  #   image: steveltn/https-portal:1
-  #   ports:
-  #     - '44398:443'  # Expose port 44398 for HTTPS traffic
-  #   environment:
-  #     DOMAINS: 'example.com => https://localhost'
-  #     PROXY_UPSTREAM_NAME: 'productivitykeeperweb'
-  #     PROXY_UPSTREAM_PORT: '65070'
-  #   volumes:
-  #     - /etc/ssl:/etc/ssl
-  #     - /var/run/docker.sock:/var/run/docker.sock
+  productivitykeeperclient:
+    build:
+      context: ./ProductivityKeeperClient
+      dockerfile: Dockerfile  # Assuming the Dockerfile is in the frontend project directory
+    ports:
+      - '4201:4201'
+    environment:
+      NODE_ENV: "production"
+    volumes:
+      - ./ProductivityKeeperClient:/app/ProductivityKeeperClient 
 
   nginx:
     image: nginx
@@ -49,7 +36,9 @@ services:
       - ./key.pem:/root/ssl/key.pem
       - ./cert.pem:/root/ssl/cert.pem
       - ./ssl:/etc/nginx/ssl
+      -  ./sites-enabled/:/etc/nginx/sites-enabled
+      -  ./logs/:/var/logs/nginx/myapp.local/
     ports:
-      - "443:443"
+        - '44398:443'
     depends_on:
       - productivitykeeperweb

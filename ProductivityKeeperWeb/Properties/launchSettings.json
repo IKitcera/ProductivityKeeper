@@ -10,41 +10,48 @@
     },
     "IIS Express Prod": {
       "commandName": "IISExpress",
-      "launchBrowser": true,
       "applicationUrl": "http://localhost:65070",
-      "launchUrl": "/hangfire",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_Kestrel__Certificates__Default__Password": "kitce",
-        "ASPNETCORE_Kestrel__Certificates__Default__Path": "https/aspnetapp.pfx",
-        //"ASPNETCORE_HTTPS_PORTS": "44398",
-        //"ASPNETCORE_HTTP_PORTS": "65070",
-        "ConnectionStrings:DefaultConnection": "Data Source=127.0.0.1,1433;Initial Catalog=prodKeepDb;Integrated Security=False;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;User ID=prodKeepClient;Password=jeweler2020"
-      },
       "sslPort": 44398,
-    },
-    "WSL": {
-      "commandName": "WSL2",
-      "launchBrowser": true,
-      "launchUrl": "https://localhost:65070/swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "https://localhost:5001;http://localhost:5000"
-      },
-      "distributionName": ""
-    },
-    "Container (Dockerfile)": {
-      "commandName": "Docker",
-      "applicationUrl": "http://localhost:65070",
-      "launchUrl": "https://localhost:44398/hangfire",
+      "launchUrl": "swagger",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production",
         "ASPNETCORE_Kestrel__Certificates__Default__Password": "kitce",
         "ASPNETCORE_Kestrel__Certificates__Default__Path": "https/aspnetapp.pfx",
-        "ASPNETCORE_HTTPS_PORTS": "44398",
-        "ASPNETCORE_HTTP_PORTS": "65070"
-       },
+        "ConnectionStrings:DefaultConnection": "Server=192.168.31.176,1433;Initial Catalog=prodKeepDb;Integrated Security=False; Connect Timeout=30;Encrypt=True;TrustServerCertificate=True;User ID=prodKeepClient;Password=jeweler2020"
+        //"ASPNETCORE_HTTPS_PORTS": "44398",
+        //"ASPNETCORE_HTTP_PORTS": "65070"
+      },
+      "useSSL": true
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:65070",
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "ASPNETCORE_Kestrel__Certificates__Default__Password": "kitce",
+        "ASPNETCORE_Kestrel__Certificates__Default__Path": "https/aspnetapp.pfx",
+        //"ASPNETCORE_HTTPS_PORTS": "44398",
+        //"ASPNETCORE_HTTP_PORTS": "65070",
+      },
+      "sslPort": 44398
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "applicationUrl": "http://localhost:65070",
+      "sslPort": 44398,
+      "launchUrl": "swagger",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "ASPNETCORE_Kestrel__Certificates__Default__Password": "kitce",
+        "ASPNETCORE_Kestrel__Certificates__Default__Path": "https/aspnetapp.pfx",
+        //"ASPNETCORE_HTTPS_PORTS": "44398",
+        //"ASPNETCORE_HTTP_PORTS": "65070"
+        "ConnectionStrings:DefaultConnection": "Server=host.docker.internal,1433;Initial Catalog=prodKeepDb;Integrated Security=False;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;User ID=prodKeepClient;Password=jeweler2020"
+      },
       "useSSL": true
     },
   //  "Container (Dockerfile)": {
