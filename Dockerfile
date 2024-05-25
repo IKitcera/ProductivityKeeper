@@ -22,7 +22,3 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "ProductivityKeeperWeb.dll"]
-
-# Expose ports
-EXPOSE 80
-EXPOSE 443
