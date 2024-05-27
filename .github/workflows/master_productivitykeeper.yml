@@ -20,13 +20,15 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '8.x'
-          include-prerelease: true
 
+      - name: Restore
+        run: dotnet restore
+        
       - name: Build with dotnet
-        run: dotnet build ProductivityKeeperWeb/ProductivityKeeperWeb.csproj --configuration Release
+        run: dotnet build ProductivityKeeperWeb/ProductivityKeeperWeb.csproj --no-restore --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish  ProductivityKeeperWeb/ProductivityKeeperWeb.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish  ProductivityKeeperWeb/ProductivityKeeperWeb.csproj --no-build -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
