@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
 using System.Threading.Tasks;
@@ -22,7 +21,7 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpGet]
         public async Task<ActionResult<Timer>> GetTimer()
         {
-           return await _timerService.GetTimer();
+            return await _timerService.GetTimer();
         }
 
         [HttpPost]

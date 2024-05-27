@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models.TaskRelated;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ProductivityKeeperWeb.Controllers
@@ -67,7 +66,7 @@ namespace ProductivityKeeperWeb.Controllers
         }
 
         [HttpPost("change-status")]
-        public async Task<ActionResult<TaskItem>> ChangeTasksStatus([FromBody]int taskId)
+        public async Task<ActionResult<TaskItem>> ChangeTasksStatus([FromBody] int taskId)
         {
             return await _taskWriteService.ChangeTaskStatus(taskId);
         }

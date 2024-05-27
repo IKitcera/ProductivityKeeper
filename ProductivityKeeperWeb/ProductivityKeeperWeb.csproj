@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <UserSecretsId>5661d53c-7f4d-4c0b-a937-f93cd159aec0</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
     <Copyright>ikitsera</Copyright>
     <Company>$(IKitsera)</Company>
     <Version>$(v)</Version>
+    <StartupObject>ProductivityKeeperWeb.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.11.3" />

@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain;
 using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
-using ProductivityKeeperWeb.Domain.Models.TaskRelated;
-using ProductivityKeeperWeb.Domain.Utils;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

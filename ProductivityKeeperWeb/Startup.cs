@@ -2,13 +2,11 @@ using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
@@ -16,7 +14,6 @@ using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain.Interfaces;
 using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Hubs;
-using ProductivityKeeperWeb.Middleware;
 using ProductivityKeeperWeb.Services;
 using ProductivityKeeperWeb.Services.Repositories;
 using System.Net;
@@ -36,7 +33,6 @@ namespace ProductivityKeeperWeb
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors(options =>
@@ -55,12 +51,8 @@ namespace ProductivityKeeperWeb
                 opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
                     {
-                        //     options.Authority = host;
                         options.TokenValidationParameters = new TokenValidationParameters
                         {
-                            // ValidateIssuer = true,
-                            //  ValidateAudience = true,
-                            //   ValidateLifetime = true,
                             ValidateIssuerSigningKey = true,
 
                             ValidIssuer = AuthOptions.ISSUER,
@@ -74,12 +66,10 @@ namespace ProductivityKeeperWeb
                             {
                                 var accessToken = context.Request.Query["access_token"];
 
-                                // If the request is for our hub...
                                 var path = context.HttpContext.Request.Path;
                                 if (!string.IsNullOrEmpty(accessToken) &&
                                     (path.StartsWithSegments("/chart-hub")))
                                 {
-                                    // Read the token out of the query string
                                     context.Token = accessToken;
                                 }
                                 return Task.CompletedTask;
@@ -114,7 +104,7 @@ namespace ProductivityKeeperWeb
 
             ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 
-            services.AddHangfire(configuration => 
+            services.AddHangfire(configuration =>
             {
                 configuration.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"));
             });
@@ -171,19 +161,16 @@ namespace ProductivityKeeperWeb
 
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-              
-               
             }
             else
             {
-                //app.UseHsts();
+                app.UseHsts();
             }
             app.UseSwagger();
             app.UseSwaggerUI();
@@ -202,7 +189,7 @@ namespace ProductivityKeeperWeb
                 endpoints.MapHub<ChartHub>("/chart-hub");
                 endpoints.MapControllers();
             });
-             
+
             app.UseHangfireDashboard("/hangfire");
         }
     }
