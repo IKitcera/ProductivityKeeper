@@ -9,7 +9,8 @@ on:
       - master
   workflow_dispatch:
 env:
-      AZURE_WEBAPP_PACKAGE_PATH: './published'
+      AZURE_WEB_APP_NAME: "ProductivityKeeper"
+      AZURE_WEBAPP_PACKAGE_PATH: ./publish
 jobs:
   build:
     runs-on: windows-latest
@@ -23,7 +24,7 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore ProductivityKeeperWeb/ProductivityKeeperWeb.csproj
         
       - name: Build with dotnet
         run: dotnet build ProductivityKeeperWeb/ProductivityKeeperWeb.csproj --no-restore --configuration Release
@@ -34,7 +35,7 @@ jobs:
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
-          name: .net-app
+          name: ${{env.AZURE_WEB_APP_NAME}}
           path: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
 
   deploy:
@@ -50,7 +51,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
-          name: .net-app
+          name: ${{env.AZURE_WEB_APP_NAME}}
       
       - name: Login to Azure
         uses: azure/login@v1
@@ -63,7 +64,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ProductivityKeeper'
+          app-name: ${{env.AZURE_WEB_APP_NAME}}
           publish-profile: ${{secrets.AZURE_WEBAPP_PUBLISH_PROFILE}}
           package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
           
