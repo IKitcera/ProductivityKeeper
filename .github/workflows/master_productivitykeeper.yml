@@ -29,7 +29,7 @@ jobs:
         run: dotnet build ProductivityKeeperWeb/ProductivityKeeperWeb.csproj --no-restore --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish  ProductivityKeeperWeb/ProductivityKeeperWeb.csproj --no-build -c Release -o ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
+        run: dotnet publish  ProductivityKeeperWeb/ProductivityKeeperWeb.csproj -c Release --no-build --output ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -46,8 +46,6 @@ jobs:
      
     permissions:
       id-token: write #This is required for requesting the JWT
-    env:
-      AZURE_WEBAPP_PACKAGE_PATH: './published'
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
@@ -67,6 +65,5 @@ jobs:
         with:
           app-name: 'ProductivityKeeper'
           publish-profile: ${{secrets.AZURE_WEBAPP_PUBLISH_PROFILE}}
-          slot-name: 'production'
           package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
           
