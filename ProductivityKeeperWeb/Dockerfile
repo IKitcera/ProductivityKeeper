@@ -7,8 +7,8 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ProductivityKeeperWeb/ProductivityKeeperWeb.csproj", "ProductivityKeeperWeb/"]
-COPY ["UserTasksProgressPredictionEngine/UserTasksProgressPredictionEngine.csproj", "UserTasksProgressPredictionEngine/"]
+COPY ["/ProductivityKeeperWeb/ProductivityKeeperWeb.csproj", "./ProductivityKeeperWeb/"]
+COPY ["/UserTasksProgressPredictionEngine/UserTasksProgressPredictionEngine.csproj", "./UserTasksProgressPredictionEngine/"]
 RUN dotnet restore "./ProductivityKeeperWeb/ProductivityKeeperWeb.csproj"
 COPY . .
 WORKDIR "/src/ProductivityKeeperWeb"

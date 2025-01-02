@@ -8,13 +8,9 @@ services:
     restart: always
     ports:
       - '65070:8080'
-      - '44398:8081'
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      # ASPNETCORE_HTTPS_PORTS": 443
-      # ASPNETCORE_HTTP_PORTS": 80
-      ASPNETCORE_Kestrel__Certificates__Default__Password: kitce
-      ASPNETCORE_Kestrel__Certificates__Default__Path: ./ProductivityKeeperWeb/aspnetapp.pfx
+      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Initial Catalog=prodKeepDb;Persist Security Info=False;User ID=prodKeepClient;Password=joker751;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"
     command: ["dotnet", "ProductivityKeeperWeb.dll"]
     volumes:
       - ./ProductivityKeeperWeb:/app/ProductivityKeeperWeb
@@ -22,24 +18,10 @@ services:
   productivitykeeperclient:
     build:
       context: ./ProductivityKeeperClient
-      dockerfile: Dockerfile  # Assuming the Dockerfile is in the frontend project directory
+      dockerfile: Dockerfile
     ports:
       - '4201:4201'
     environment:
       NODE_ENV: "production"
     volumes:
       - ./ProductivityKeeperClient:/app/ProductivityKeeperClient 
-
-  # nginx:
-  #   image: nginx
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/conf.d/default.conf
-  #     - ./key.pem:/root/ssl/key.pem
-  #     - ./cert.pem:/root/ssl/cert.pem
-  #     - ./ssl:/etc/nginx/ssl
-  #     -  ./sites-enabled/:/etc/nginx/sites-enabled
-  #     -  ./logs/:/var/logs/nginx/myapp.local/
-  #   ports:
-  #       - '44398:443'
-  #   depends_on:
-  #     - productivitykeeperweb

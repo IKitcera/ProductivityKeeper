@@ -54,7 +54,7 @@
 "wD2lVrQaoySYUGdhWqImVfiMGZ3+EaLh4gF9avY2jFgRenJUbnUSuC46qvEzXF/m" +
 "aVLsbO460StHDPWtIgPk9bZ/f38R2TeKvukK3G+asAfbf/Yfn8uZsbWrHDZK3bng" +
 "KezGXU4nicAY5oguH0sFFSEM4Ul8JA==";   // ключ для шифрации
-        public const int LIFETIME = 60; // время жизни токена - 1 минута
+        public const int LIFETIME = 60*24; // время жизни токена - 1 минута
         public static Microsoft.IdentityModel.Tokens.SymmetricSecurityKey GetSymmetricSecurityKey()
         {
             return new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.ASCII.GetBytes(KEY));
