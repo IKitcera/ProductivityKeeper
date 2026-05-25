@@ -30,7 +30,7 @@ namespace ProductivityKeeperWeb.Controllers
         public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks(int subcategoryId)
         {
             Subcategory sub = await _taskReadService.GetSubcategory(subcategoryId);
-            return sub.Tasks;
+            return Ok(sub.Tasks);
         }
 
         [HttpGet("{id}")]
@@ -41,10 +41,10 @@ namespace ProductivityKeeperWeb.Controllers
         }
 
         [HttpGet("tags")]
-        public async Task<ActionResult<List<Tag>>> GetTags()
+        public async Task<ActionResult<IEnumerable<Tag>>> GetTags()
         {
             var res = await _taskReadService.GetTags();
-            return res;
+            return Ok(res);
         }
 
         [HttpPut("{id}")]
@@ -57,7 +57,8 @@ namespace ProductivityKeeperWeb.Controllers
 
             try
             {
-                return await _taskWriteService.UpdateTaskItem(task);
+                var updatedTask = await _taskWriteService.UpdateTaskItem(task);
+                return Ok(updatedTask);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -74,7 +75,8 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpPost]
         public async Task<ActionResult<TaskItem>> PostTask(TaskItem task)
         {
-            return await _taskWriteService.AddTaskItem(task);
+            var updatedTask = await _taskWriteService.AddTaskItem(task);
+            return Ok(updatedTask);
         }
 
         [HttpDelete("{taskId}")]

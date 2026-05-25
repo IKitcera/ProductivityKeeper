@@ -8,7 +8,6 @@ using ProductivityKeeperWeb.Domain.Utils;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Schema;
 
 namespace ProductivityKeeperWeb.Services.Repositories
 {
@@ -54,21 +53,26 @@ namespace ProductivityKeeperWeb.Services.Repositories
                     .Include(u => u.TaskArchive);
             }
 
+            if (includeArchive || includeStat)
+            {
+                query = query.AsSplitQuery();
+            }
+
             var unit = await query
                 .FirstOrDefaultAsync(unit => unit.Id == unitId);
 
 
             unit.Categories = unit.Categories.OrderBy(c => c.Position).ToList();
 
-            foreach (var ctg in unit.Categories.Where(c => c.Subcategories.Count > 0))
-            { 
+            foreach (var ctg in unit.Categories.Where(c => c.Subcategories.Any()))
+            {
                 ctg.Subcategories = ctg.Subcategories.OrderBy(s => s.Position).ToList();
 
-                foreach(var sub in ctg.Subcategories.Where(s => s.Tasks.Count > 0))
+                foreach (var sub in ctg.Subcategories.Where(s => s.Tasks.Any()))
                 {
                     sub.Tasks = sub.Tasks.OrderBy(x => x.IsChecked).ThenBy(x => x.Position).ToList();
 
-                    foreach(var task in sub.Tasks)
+                    foreach (var task in sub.Tasks)
                     {
                         task.Subcategories = await GetSubcategoriesByTask(task.Id);
                     }
@@ -130,11 +134,12 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 .SingleOrDefaultAsync(x => x.Id == taskId);
         }
 
-        public Task<List<Subcategory>> GetSubcategoriesByTask(int taskId)
+        public async Task<IEnumerable<Subcategory>> GetSubcategoriesByTask(int taskId)
         {
-            return _context.SubcategoriesTasks.AsNoTracking()
+            return await _context.SubcategoriesTasks.AsNoTracking()
                .Include(st => st.Subcategory).ThenInclude(s => s.Category)
                .Include(st => st.TaskItem)
+               .AsSplitQuery()
                .Where(st => st.TaskItemId == taskId)
                .Select(st => st.Subcategory)
                .ToListAsync();
@@ -165,7 +170,7 @@ namespace ProductivityKeeperWeb.Services.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Tag>> GetTags()
+        public async Task<IEnumerable<Tag>> GetTags()
         {
             var res = await _context.SubcategoriesTasks.AsNoTracking()
               .Where(st => st.Subcategory.Category.UnitId == _authService.GetUnitId())

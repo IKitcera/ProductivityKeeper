@@ -1,11 +1,10 @@
-version: '3.9'
-
 services:
   productivitykeeperweb:
     build:
-      context: ./ProductivityKeeperWeb
-      dockerfile: Dockerfile
-    restart: always
+      context: ./
+      dockerfile: ProductivityKeeperWeb/Dockerfile
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     ports:
       - '65070:8080'
     environment:
@@ -14,14 +13,11 @@ services:
     command: ["dotnet", "ProductivityKeeperWeb.dll"]
     volumes:
       - ./ProductivityKeeperWeb:/app/ProductivityKeeperWeb
+      - ./UserTasksProgressPredictionEngine:/app/UserTasksProgressPredictionEngine
 
   productivitykeeperclient:
     build:
       context: ./ProductivityKeeperClient
       dockerfile: Dockerfile
     ports:
-      - '4201:4201'
-    environment:
-      NODE_ENV: "production"
-    volumes:
-      - ./ProductivityKeeperClient:/app/ProductivityKeeperClient 
+      - '4201:80'

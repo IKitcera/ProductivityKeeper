@@ -50,20 +50,21 @@ namespace ProductivityKeeperWeb.Domain.Utils
             timeCtg = FillCategory(timeCtg, unit.Categories);
             aspectCtg = FillCategory(aspectCtg, unit.Categories);
 
-            unit.Categories.Add(aspectCtg);
-            unit.Categories.Add(timeCtg);
+            unit.Categories = unit.Categories.Append(aspectCtg);
+            unit.Categories = unit.Categories.Append(timeCtg);
 
-            unit.Categories.ForEach(c =>
+            foreach (var category in unit.Categories)
             {
-                c.Subcategories.ForEach(s =>
+                foreach (var subcategory in  category.Subcategories)
                 {
-                    s = FillSubcategory(s, c.Subcategories);
-                    s.Tasks.ForEach(t =>
+                    FillSubcategory(subcategory, category.Subcategories);
+
+                    foreach (var task in subcategory.Tasks)
                     {
-                        t = FillTask(t);
-                    });
-                });
-            });
+                        FillTask(task);
+                    }
+                }
+            }
 
 
             unit.Timer.Label = "Learn English";

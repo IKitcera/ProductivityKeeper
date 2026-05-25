@@ -191,31 +191,28 @@ namespace ProductivityKeeperWeb.Services.Repositories
         public async Task<TaskItem> AddTaskItem(TaskItem task)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
                 task = TaskRelatedInitializar.FillTask(task);
 
-                var subcategoryItem = await _context.Subcategories.FindAsync(task.Subcategories[0].Id);
+                var subcategory = task.Subcategories.First();
+                var subcategoryItem = await _context.Subcategories.FindAsync(subcategory.Id);
 
                 if (subcategoryItem == null)
                     throw new InvalidOperationException("Cannot find category id!");
 
-                task.Subcategories[0] = subcategoryItem;
-                var item = await _context.Tasks.AddAsync(task);
-
-                _context.Entry(subcategoryItem).State = EntityState.Modified;
-                _context.Entry(item.Entity).State = EntityState.Added;
+                task.Subcategories = new List<Subcategory> { subcategoryItem };
+                await _context.Tasks.AddAsync(task);
 
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 RunBackgroundUpdateStatisticJob(_authService.GetUnitId());
-
-                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                throw;
             }
 
             return await _tasksReadService.GetTask(task.Id);

@@ -9,7 +9,7 @@ namespace ProductivityKeeperWeb.Domain.Models
     public class UserStatistic
     {
         public int Id { get; set; }
-        public List<DonePerDay> PerDayStatistic { get; set; } = new List<DonePerDay>();
+        public IEnumerable<DonePerDay> PerDayStatistic { get; set; } = new List<DonePerDay>();
         public float PercentOfDoneToday { get; set; }
         public float PercentOfDoneTotal { get; set; }
         public int CountOfDoneToday { get; set; }

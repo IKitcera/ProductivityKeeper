@@ -41,10 +41,11 @@ namespace ProductivityKeeperWeb.Services
         public async Task<ForecastedStatisticResult> GetStatisticWithPrediction()
         {
             var stat = await _taskReadService.GetStatistic();
+            var statItemsLength = stat.PerDayStatistic.Count();
 
-            if (stat.PerDayStatistic.Count <= 10)
+            if (statItemsLength <= 10)
             {
-                throw new ArgumentException($"At least 11 days of statistic are required to predict future values. Now {stat.PerDayStatistic.Count} days are counted");
+                throw new ArgumentException($"At least 11 days of statistic are required to predict future values. Now {statItemsLength} days are counted");
             }
 
             var pe = new StatisticPredictionEngine();
@@ -68,10 +69,13 @@ namespace ProductivityKeeperWeb.Services
             if (!statistic.PerDayStatistic.Any() ||
                 statistic.PerDayStatistic.Last().Date.Date != DateTime.Now.Date)
             {
-                statistic.PerDayStatistic.Add(new DonePerDay { Date = DateTime.Now.Date, CountOfDone = 0 });
+                statistic.PerDayStatistic = statistic.PerDayStatistic.Append(new DonePerDay { Date = DateTime.Now.Date, CountOfDone = 0 });
             }
 
-            statistic.PerDayStatistic.ForEach(pds => pds.Statistic = null);
+            foreach (var pds in statistic.PerDayStatistic)
+            {
+                pds.Statistic = null;
+            }
 
             _chartHubContext.Clients.Client(ChartHub.UnitConnectionsToUnits[unit.UserId])
                 .SendAsync("StatisticUpdated", statistic);

@@ -14,7 +14,7 @@ namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
         public int CategoryId { get; set; }
         public virtual Category Category { get; set; }
 
-        public List<TaskItem> Tasks { get; set; } = new List<TaskItem>();
+        public IEnumerable<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 
 
         [JsonIgnore]

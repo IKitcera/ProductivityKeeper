@@ -1,11 +1,22 @@
 {
   "profiles": {
+    "Kestrel": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:44398;http://localhost:65070",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings:DefaultConnection": "Server=DESKTOP-6PJD0EA;Initial Catalog=prodKeepDb;Persist Security Info=False;User ID=prodKeepClient;Password=joker751;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"
+      }
+    },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings:DefaultConnection": "Server=DESKTOP-6PJD0EA;Initial Catalog=prodKeepDb;Persist Security Info=False;User ID=prodKeepClient;Password=joker751;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"
       }
     },
     "IIS Express Prod": {

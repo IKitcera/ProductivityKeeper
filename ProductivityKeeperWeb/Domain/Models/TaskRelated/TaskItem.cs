@@ -23,7 +23,7 @@ namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
 
         public double? HabbitIntervalInHours { get; set; }
         
-        public List<Subcategory> Subcategories { get; set; } = new ();
+        public IEnumerable<Subcategory> Subcategories { get; set; } = new List<Subcategory>();
         public ICollection<Tag> Tags { get => Subcategories
                 .Select(s => Tag.GetTag(Id, s)).ToList(); } 
 

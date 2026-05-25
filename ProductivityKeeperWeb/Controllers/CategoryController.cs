@@ -47,7 +47,7 @@ namespace ProductivityKeeperWeb.Controllers
         {
             Category category = await _taskReadService.GetCategory(id);
 
-            return category == null ? (ActionResult<Category>)NotFound() : (ActionResult<Category>)category;
+            return category == null ? NotFound() : Ok(category);
         }
 
         // PUT: api/Category/5

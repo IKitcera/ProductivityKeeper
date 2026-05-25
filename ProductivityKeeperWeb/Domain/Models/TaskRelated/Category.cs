@@ -12,7 +12,7 @@ namespace ProductivityKeeperWeb.Domain.Models.TaskRelated
         public bool IsVisible { get; set; }
         public int UnitId { get; set; }
 
-        public List<Subcategory> Subcategories { get; set; } = new List<Subcategory>();
+        public IEnumerable<Subcategory> Subcategories { get; set; } = new List<Subcategory>();
 
         //todo: remove
         [JsonIgnore]

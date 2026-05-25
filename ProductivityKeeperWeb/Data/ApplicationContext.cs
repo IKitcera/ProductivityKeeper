@@ -19,6 +19,7 @@ namespace ProductivityKeeperWeb.Data
         public DbSet<Timer> Timers { get; set; }
         public DbSet<ArchivedTask> ArchivedTasks { get; set; }
         public DbSet<DonePerDay> DonePerDays { get; set; }
+        public DbSet<DiaryItem> DiaryItems { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {

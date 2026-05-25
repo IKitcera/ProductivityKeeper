@@ -1,4 +1,6 @@
 using Hangfire;
+using Hangfire.Common;
+using Hangfire.States;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Newtonsoft.Json;
 using ProductivityKeeperWeb.Data;
 using ProductivityKeeperWeb.Domain.Interfaces;
@@ -16,6 +18,7 @@ using ProductivityKeeperWeb.Domain.Models;
 using ProductivityKeeperWeb.Hubs;
 using ProductivityKeeperWeb.Services;
 using ProductivityKeeperWeb.Services.Repositories;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -23,12 +26,15 @@ namespace ProductivityKeeperWeb
 {
     public class Startup
     {
-        string AllowedClient = string.Empty;
-        string Policy = "Single";
-        public Startup(IConfiguration configuration)
+        private readonly string AllowedClient = string.Empty;
+        private const string Policy = "Single";
+        private readonly bool _enableHangfire;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
             AllowedClient = Configuration.GetValue<string>("AllowedClients");
+            _enableHangfire = !environment.IsDevelopment() || Configuration.GetValue<bool>("Hangfire:Enabled");
         }
 
         public IConfiguration Configuration { get; }
@@ -104,11 +110,18 @@ namespace ProductivityKeeperWeb
 
             ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 
-            services.AddHangfire(configuration =>
+            if (_enableHangfire)
             {
-                configuration.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"));
-            });
-            services.AddHangfireServer();
+                services.AddHangfire(configuration =>
+                {
+                    configuration.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"));
+                });
+                services.AddHangfireServer();
+            }
+            else
+            {
+                services.AddSingleton<IBackgroundJobClient, NoOpBackgroundJobClient>();
+            }
 
             services.AddSignalR();
 
@@ -132,24 +145,21 @@ namespace ProductivityKeeperWeb
             {
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    In = ParameterLocation.Header,
-                    Description = "Please insert JWT with Bearer into field",
                     Name = "Authorization",
-                    Type = SecuritySchemeType.ApiKey
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
                 });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
-                   {
-                     new OpenApiSecurityScheme
-                     {
-                       Reference = new OpenApiReference
-                       {
-                         Type = ReferenceType.SecurityScheme,
-                         Id = "Bearer"
-                       }
-                      },
-                      new string[] { }
+
+                c.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecuritySchemeReference("Bearer", null, null),
+                        new List<string>()
                     }
-                  });
+                });
             });
 
             services.AddScoped<ITasksReadService, TasksReadService>();
@@ -158,6 +168,10 @@ namespace ProductivityKeeperWeb
 
             services.AddScoped<IStatistics, StatisticsService>();
             services.AddScoped<ITimerService, TimerService>();
+
+            // Diary feature Clean Architecture registrations
+            services.AddScoped<IDiaryRepository, DiaryRepository>();
+            services.AddScoped<DiaryService>();
 
         }
 
@@ -177,9 +191,9 @@ namespace ProductivityKeeperWeb
 
             app.UseHttpsRedirection();
 
-            app.UseCors(Policy);
-
             app.UseRouting();
+
+            app.UseCors(Policy);
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -190,7 +204,17 @@ namespace ProductivityKeeperWeb
                 endpoints.MapControllers();
             });
 
-            app.UseHangfireDashboard("/hangfire");
+            if (_enableHangfire)
+            {
+                app.UseHangfireDashboard("/hangfire");
+            }
+        }
+
+        private sealed class NoOpBackgroundJobClient : IBackgroundJobClient
+        {
+            public string Create(Job job, IState state) => string.Empty;
+
+            public bool ChangeState(string jobId, IState state, string expectedState) => false;
         }
     }
 }

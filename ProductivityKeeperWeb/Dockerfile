@@ -1,22 +1,22 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER app
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["/ProductivityKeeperWeb/ProductivityKeeperWeb.csproj", "./ProductivityKeeperWeb/"]
-COPY ["/UserTasksProgressPredictionEngine/UserTasksProgressPredictionEngine.csproj", "./UserTasksProgressPredictionEngine/"]
+COPY ["./ProductivityKeeperWeb/ProductivityKeeperWeb.csproj", "ProductivityKeeperWeb/"]
+COPY ["./UserTasksProgressPredictionEngine/UserTasksProgressPredictionEngine.csproj", "UserTasksProgressPredictionEngine/"]
 RUN dotnet restore "./ProductivityKeeperWeb/ProductivityKeeperWeb.csproj"
 COPY . .
 WORKDIR "/src/ProductivityKeeperWeb"
-RUN dotnet build "./ProductivityKeeperWeb.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./ProductivityKeeperWeb.csproj" -c ${BUILD_CONFIGURATION} -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ProductivityKeeperWeb.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./ProductivityKeeperWeb.csproj" -c ${BUILD_CONFIGURATION} -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

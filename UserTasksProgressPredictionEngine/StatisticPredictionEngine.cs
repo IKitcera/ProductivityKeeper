@@ -45,10 +45,10 @@ namespace UserTasksProgressPredictionEngine
             var trainData = mlContext.Data.TakeRows(dataView, trainRowsCount);
             var testData = mlContext.Data.SkipRows(dataView, trainRowsCount);
 
-            // Dev purposes
+            //// Dev purposes
 
-            var p1 = trainData.Preview();
-            var p2 = testData.Preview();
+            //var p1 = trainData.Preview();
+            //var p2 = testData.Preview();
 
             // Creating of forecaster
 
@@ -78,7 +78,7 @@ namespace UserTasksProgressPredictionEngine
 
             // Evaluate(testData, forecaster, mlContext);
 
-            return PrepareResults(data.ToList(), forecast.ToList());
+            return PrepareResults(data, forecast);
         }
 
         private void Evaluate(IDataView testData, ITransformer model, MLContext mlContext)
@@ -132,21 +132,25 @@ namespace UserTasksProgressPredictionEngine
         }
 
 
-        private ForecastedStatisticResult PrepareResults(List<StatisticItem> real, List<StatisticItemForecast> predicted)
+        private ForecastedStatisticResult PrepareResults(IEnumerable<StatisticItem> real, IEnumerable<StatisticItemForecast> predicted)
         {
-            real.ForEach(item => item.Date = NormalizeDate(item.Date, real[0].Date, real[real.Count - 1].Date));
+            var realLength = real.Count();
+            foreach (var item in real)
+            {
+                item.Date = NormalizeDate(item.Date, real.ElementAt(0).Date, real.ElementAt(realLength - 1).Date);
+            }
 
-            var step = (real[real.Count - 1].Date - real[real.Count - 2].Date).TotalMilliseconds;
+            var step = (real.ElementAt(realLength - 1).Date - real.ElementAt(realLength - 2).Date).TotalMilliseconds;
 
             var i = 1;
 
-            predicted.ForEach(item =>
+            foreach (var item in predicted)
             {
-                item.Date = real[real.Count - 1].Date.AddMilliseconds(step * i);
-                item.StatisticId = real[real.Count - 1].StatisticId;
+                item.Date = real.ElementAt(realLength - 1).Date.AddMilliseconds(step * i);
+                item.StatisticId = real.ElementAt(realLength - 1).StatisticId;
                 item.CountOfDone = item.CountOfDone < 0 ? 0 : item.CountOfDone;
                 i++;
-            });
+            }
 
             return new ForecastedStatisticResult
             {

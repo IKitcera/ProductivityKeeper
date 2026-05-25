@@ -50,7 +50,8 @@ namespace ProductivityKeeperWeb.Controllers
         [HttpPost]
         public async Task<ActionResult<Subcategory>> PostSubcategory(Subcategory subcategory)
         {
-            return await _taskWriteService.AddSubcategory(subcategory);
+            var sub = await _taskWriteService.AddSubcategory(subcategory);
+            return Ok(sub);
         }
 
         [HttpPost("reorder")]

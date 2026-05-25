@@ -20,7 +20,7 @@ namespace ProductivityKeeperWeb.Domain.Interfaces
         Task<Subcategory> GetSubcategoryBrief(int subcategoryId);
 
         Task<TaskItem> GetTask(int taskId);
-        Task<List<Tag>> GetTags();
+        Task<IEnumerable<Tag>> GetTags();
 
         Task<int> GetStatisticID();
         Task<UserStatistic> GetStatistic();
