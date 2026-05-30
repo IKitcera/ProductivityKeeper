@@ -2,8 +2,8 @@
 {
     public class AuthOptions
     {
-        public const string ISSUER = "http://localhost:65070"; // издатель токена
-        public const string AUDIENCE = "http://localhost:65070"; // потребитель токена
+        public const string ISSUER = "http://localhost:8090"; // издатель токена
+        public const string AUDIENCE = "http://localhost:8090"; // потребитель токена
         const string KEY = "MIIJQgIBADANBgkqhkiG9w0BAQEFAASCCSwwggkoAgEAAoICAQDRs5EzYQIb0GFs" +
             "zWr85208ZYdAZ6H97rc6pjg9Lm0MmmZDzfPAuKXKxW25cDnHtAO42P6lcY5VyOXp" +
 "dlkB0N3sqYchoL9MRoIvkxeJUWgxFA5afJalUZcwSaVVSleKj9Hy27A78Zpn4QAJ" +
