@@ -6,7 +6,7 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     ports:
-      - '65070:8080'
+      - '8090:8080'
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Initial Catalog=prodKeepDb;Persist Security Info=False;User ID=prodKeepClient;Password=joker751;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"
