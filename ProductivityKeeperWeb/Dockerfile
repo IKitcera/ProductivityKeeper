@@ -1,6 +1,8 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+USER root
+RUN apt-get update && apt-get install -y libgomp1 && rm -rf /var/lib/apt/lists/*
 USER app
 WORKDIR /app
 
@@ -20,5 +22,5 @@ RUN dotnet publish "./ProductivityKeeperWeb.csproj" -c ${BUILD_CONFIGURATION} -o
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=publish --chown=app:app /app/publish .
 ENTRYPOINT ["dotnet", "ProductivityKeeperWeb.dll"]
